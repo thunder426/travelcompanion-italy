@@ -15,6 +15,8 @@
       "supportsTablet": false,
       "infoPlist": {
         "NSCameraUsageDescription": "Used to translate text and identify artworks",
+        "NSMicrophoneUsageDescription": "Used to capture your voice for translation",
+        "NSSpeechRecognitionUsageDescription": "Used to convert your speech to text for translation",
         "NSLocationAlwaysAndWhenInUseUsageDescription": "Used to warn you of ZTL zones while driving",
         "NSLocationWhenInUseUsageDescription": "Used to show your position on the map"
       }
@@ -26,6 +28,7 @@
       },
       "permissions": [
         "CAMERA",
+        "RECORD_AUDIO",
         "ACCESS_FINE_LOCATION",
         "ACCESS_BACKGROUND_LOCATION",
         "RECEIVE_BOOT_COMPLETED",
