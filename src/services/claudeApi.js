@@ -1,26 +1,16 @@
 import { ANTHROPIC_API_KEY } from '@env';
+import { getContextString } from './destinationContext';
 
 const API_URL = 'https://api.anthropic.com/v1/messages';
 const MODEL = 'claude-sonnet-4-6';
 
-/**
- * Send a message to Claude with an optional image.
- * @param {string} prompt - Text prompt to send
- * @param {string|null} base64Image - Base64-encoded image (without data URI prefix)
- * @param {string} mediaType - e.g. 'image/jpeg'
- * @returns {Promise<string>} - Claude's text response
- */
 async function askClaude(prompt, base64Image = null, mediaType = 'image/jpeg') {
   const content = [];
 
   if (base64Image) {
     content.push({
       type: 'image',
-      source: {
-        type: 'base64',
-        media_type: mediaType,
-        data: base64Image,
-      },
+      source: { type: 'base64', media_type: mediaType, data: base64Image },
     });
   }
 
@@ -49,16 +39,20 @@ async function askClaude(prompt, base64Image = null, mediaType = 'image/jpeg') {
   return data.content[0].text;
 }
 
-export const translateImage = (base64Image) =>
-  askClaude(
-    'You are a travel companion. Translate all text in this image into English. ' +
+export const translateImage = (base64Image) => {
+  const ctx = getContextString();
+  return askClaude(
+    `You are a travel companion.${ctx ? ` ${ctx}` : ''} ` +
+    'Translate all text in this image into English. ' +
     'After the translation, add a brief note about any cultural context or practical tips ' +
     'a tourist should know (e.g. if it\'s a menu item, describe the dish; if it\'s a sign, ' +
     'explain what action to take). Keep your response concise and practical.',
     base64Image
   );
+};
 
 export const describeArtwork = (base64Image, depth = 'standard') => {
+  const ctx = getContextString();
   const depthPrompt =
     depth === 'quick'
       ? 'Give a short 2-3 sentence description suitable for a quick visit.'
@@ -67,18 +61,24 @@ export const describeArtwork = (base64Image, depth = 'standard') => {
       : 'Give a 1-2 paragraph explanation covering what the artwork is, who created it, and why it\'s significant.';
 
   return askClaude(
-    `You are an expert museum guide. Identify this artwork or exhibit and explain it. ${depthPrompt}`,
+    `You are an expert museum guide specialising in Italian art and history.` +
+    `${ctx ? ` ${ctx}` : ''} ` +
+    `Identify this artwork or exhibit and explain it. ${depthPrompt}`,
     base64Image
   );
 };
 
-export const describeStreet = (base64Image) =>
-  askClaude(
-    'You are a knowledgeable travel guide. Look at this photo and identify any visible landmarks, ' +
-    'buildings, or points of interest. Provide their history and interesting facts. ' +
+export const describeStreet = (base64Image) => {
+  const ctx = getContextString();
+  return askClaude(
+    `You are a knowledgeable travel guide specialising in Italian history and architecture.` +
+    `${ctx ? ` ${ctx}` : ''} ` +
+    'Look at this photo and identify any visible landmarks, buildings, or points of interest. ' +
+    'Provide their history and interesting facts. ' +
     'If you cannot identify a specific landmark, describe the architectural style and likely time period.',
     base64Image
   );
+};
 
 const LANGUAGE_NAMES = {
   en: 'English',
@@ -88,7 +88,7 @@ const LANGUAGE_NAMES = {
 
 export const translateText = (text, fromLang, toLang) => {
   const from = LANGUAGE_NAMES[fromLang] ?? fromLang;
-  const to = LANGUAGE_NAMES[toLang] ?? toLang;
+  const to   = LANGUAGE_NAMES[toLang]   ?? toLang;
   return askClaude(
     `You are a professional translator specialising in travel contexts. ` +
     `Translate the following ${from} text into ${to}. ` +
