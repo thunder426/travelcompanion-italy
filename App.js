@@ -6,22 +6,25 @@ import { SafeAreaProvider } from 'react-native-safe-area-context';
 import { Text } from 'react-native';
 
 import TranslationScreen from './src/screens/TranslationScreen';
-import MuseumScreen from './src/screens/MuseumScreen';
-import MapScreen from './src/screens/MapScreen';
-import ExplorerScreen from './src/screens/ExplorerScreen';
+import DiscoverScreen    from './src/screens/DiscoverScreen';
+import MapScreen         from './src/screens/MapScreen';
+import EssentialsScreen  from './src/screens/EssentialsScreen';
+import NotesScreen       from './src/screens/NotesScreen';
 
 const Tab = createBottomTabNavigator();
 
+const ICONS = {
+  Translate:  { default: '🌍', active: '🌍' },
+  Discover:   { default: '🏛️', active: '🏛️' },
+  Map:        { default: '🗺️', active: '🗺️' },
+  Essentials: { default: '📖', active: '📖' },
+  Notes:      { default: '📝', active: '📝' },
+};
+
 function TabIcon({ name, focused }) {
-  const icons = {
-    Translate: '📷',
-    Museum: '🏛️',
-    Map: '🗺️',
-    Explorer: '🔍',
-  };
   return (
-    <Text style={{ fontSize: 20, opacity: focused ? 1 : 0.5 }}>
-      {icons[name]}
+    <Text style={{ fontSize: 20, opacity: focused ? 1 : 0.45 }}>
+      {ICONS[name].default}
     </Text>
   );
 }
@@ -35,9 +38,11 @@ export default function App() {
           screenOptions={{
             headerStyle: { backgroundColor: '#1a1a2e' },
             headerTintColor: '#fff',
-            tabBarStyle: { backgroundColor: '#1a1a2e' },
+            headerTitleStyle: { fontWeight: '700' },
+            tabBarStyle: { backgroundColor: '#1a1a2e', borderTopColor: '#2a2a50' },
             tabBarActiveTintColor: '#e94560',
-            tabBarInactiveTintColor: '#888',
+            tabBarInactiveTintColor: '#555',
+            tabBarLabelStyle: { fontSize: 11, fontWeight: '600' },
           }}
         >
           <Tab.Screen
@@ -49,11 +54,11 @@ export default function App() {
             }}
           />
           <Tab.Screen
-            name="Museum"
-            component={MuseumScreen}
+            name="Discover"
+            component={DiscoverScreen}
             options={{
-              title: 'Museum Guide',
-              tabBarIcon: ({ focused }) => <TabIcon name="Museum" focused={focused} />,
+              title: 'Discover',
+              tabBarIcon: ({ focused }) => <TabIcon name="Discover" focused={focused} />,
             }}
           />
           <Tab.Screen
@@ -65,11 +70,19 @@ export default function App() {
             }}
           />
           <Tab.Screen
-            name="Explorer"
-            component={ExplorerScreen}
+            name="Essentials"
+            component={EssentialsScreen}
             options={{
-              title: 'Explorer',
-              tabBarIcon: ({ focused }) => <TabIcon name="Explorer" focused={focused} />,
+              title: 'Essentials',
+              tabBarIcon: ({ focused }) => <TabIcon name="Essentials" focused={focused} />,
+            }}
+          />
+          <Tab.Screen
+            name="Notes"
+            component={NotesScreen}
+            options={{
+              title: 'Notes',
+              tabBarIcon: ({ focused }) => <TabIcon name="Notes" focused={focused} />,
             }}
           />
         </Tab.Navigator>
