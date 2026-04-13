@@ -8,7 +8,7 @@ const DESTINATIONS = [
     region: 'Lazio',
     emoji: '🏛️',
     tagline: 'The Eternal City',
-    heroImage: 'https://upload.wikimedia.org/wikipedia/commons/thumb/d/de/Colosseo_2020.jpg/1200px-Colosseo_2020.jpg',
+    heroImage: 'https://upload.wikimedia.org/wikipedia/commons/6/6a/Foro_Romano_Musei_Capitolini_Roma.jpg',
 
     overview: `Rome is one of the world's great historic cities, with a continuous history spanning over 2,700 years. As the capital of the Roman Empire, it shaped Western civilisation through law, architecture, language and religion. Today it seamlessly blends ancient ruins, Renaissance palaces, Baroque piazzas and a vibrant modern city.\n\nRome is compact enough to explore on foot — most major sites in the historic centre are within a 30-minute walk of each other. The best strategy is to pick a neighbourhood each day rather than rushing between landmarks.`,
 
@@ -28,13 +28,13 @@ const DESTINATIONS = [
     neighborhoods: [
       {
         name: 'Centro Storico',
-        image: 'https://upload.wikimedia.org/wikipedia/commons/thumb/4/4e/Trevi_Fountain%2C_Rome%2C_Italy_2_-_May_2007.jpg/800px-Trevi_Fountain%2C_Rome%2C_Italy_2_-_May_2007.jpg',
+        image: 'https://upload.wikimedia.org/wikipedia/commons/c/c7/Trevi_Fountain_-_Roma.jpg',
         description: 'The historic heart — Pantheon, Piazza Navona, Campo de\' Fiori, Trevi Fountain. Mostly pedestrian, packed with trattorias and gelaterias.',
         bestFor: 'Baroque fountains, people-watching, evening strolls',
       },
       {
         name: 'Trastevere',
-        image: 'https://upload.wikimedia.org/wikipedia/commons/thumb/3/3e/Roma-trastevere.jpg/800px-Roma-trastevere.jpg',
+        image: 'https://upload.wikimedia.org/wikipedia/commons/c/c7/Trevi_Fountain_-_Roma.jpg',
         description: 'Charming medieval neighbourhood south of the centre. Cobbled lanes, ivy-covered buildings, excellent local restaurants. Lively at night.',
         bestFor: 'Dinner, aperitivo, authentic neighbourhood feel',
       },
@@ -58,7 +58,7 @@ const DESTINATIONS = [
     museums: [
       {
         name: 'Vatican Museums & Sistine Chapel',
-        image: 'https://upload.wikimedia.org/wikipedia/commons/thumb/5/5b/Michelangelo_-_Creation_of_Adam_%28cropped%29.jpg/800px-Michelangelo_-_Creation_of_Adam_%28cropped%29.jpg',
+        image: 'https://upload.wikimedia.org/wikipedia/commons/5/5b/Michelangelo_-_Creation_of_Adam_%28cropped%29.jpg',
         address: 'Viale Vaticano, 00165 Roma',
         mapQuery: 'Vatican Museums Rome Italy',
         hours: 'Mon–Sat 9:00–18:00 (last entry 16:00). Closed Sundays (except last Sun of month — free)',
@@ -79,7 +79,7 @@ const DESTINATIONS = [
       },
       {
         name: 'Colosseum, Roman Forum & Palatine Hill',
-        image: 'https://upload.wikimedia.org/wikipedia/commons/thumb/d/de/Colosseo_2020.jpg/800px-Colosseo_2020.jpg',
+        image: 'https://upload.wikimedia.org/wikipedia/commons/d/de/Colosseo_2020.jpg',
         address: 'Piazza del Colosseo 1, 00184 Roma',
         mapQuery: 'Colosseum Rome Italy',
         hours: 'Daily 9:00–19:00 (Oct–Mar closes 16:30). Closed 1 Jan, 25 Dec',
@@ -100,7 +100,7 @@ const DESTINATIONS = [
       },
       {
         name: 'Borghese Gallery',
-        image: 'https://upload.wikimedia.org/wikipedia/commons/thumb/e/e3/Bernini%2C_apollo_e_dafne_01.jpg/600px-Bernini%2C_apollo_e_dafne_01.jpg',
+        image: 'https://upload.wikimedia.org/wikipedia/commons/a/ab/Apollo_and_Daphne_%28Bernini%29_%28cropped%29.jpg',
         address: 'Piazzale Scipione Borghese 5, 00197 Roma (inside Villa Borghese park)',
         mapQuery: 'Borghese Gallery Rome Italy',
         hours: 'Tue–Sun 9:00–19:00. Closed Monday. Strictly timed 2-hour entry slots.',
@@ -121,7 +121,7 @@ const DESTINATIONS = [
       },
       {
         name: 'Capitoline Museums',
-        image: 'https://upload.wikimedia.org/wikipedia/commons/thumb/0/07/Statue_of_Marcus_Aurelius_in_Musei_Capitolini_Rome.jpg/600px-Statue_of_Marcus_Aurelius_in_Musei_Capitolini_Rome.jpg',
+        image: 'https://upload.wikimedia.org/wikipedia/commons/6/6a/Foro_Romano_Musei_Capitolini_Roma.jpg',
         address: 'Piazza del Campidoglio 1, 00186 Roma',
         mapQuery: 'Capitoline Museums Rome Italy',
         hours: 'Daily 9:30–19:30. Closed 1 Jan, 1 May, 25 Dec',
@@ -142,7 +142,7 @@ const DESTINATIONS = [
       },
       {
         name: 'Pantheon',
-        image: 'https://upload.wikimedia.org/wikipedia/commons/thumb/8/8d/Pantheon_Rome_2006.jpg/800px-Pantheon_Rome_2006.jpg',
+        image: 'https://upload.wikimedia.org/wikipedia/commons/7/7b/Pantheon_%28Rome%29_-_Right_side_and_front.jpg',
         address: 'Piazza della Rotonda, 00186 Roma',
         mapQuery: 'Pantheon Rome Italy',
         hours: 'Mon–Sat 9:00–19:00 · Sun 9:00–18:00 · Public holidays 9:00–13:00',
@@ -165,7 +165,7 @@ const DESTINATIONS = [
     churches: [
       {
         name: 'St Peter\'s Basilica & Dome',
-        image: 'https://upload.wikimedia.org/wikipedia/commons/thumb/4/4f/St_Peter%27s_Basilica%2C_Executive_Pontine%2C_Vatican_City_-_April_2007.jpg/800px-St_Peter%27s_Basilica%2C_Executive_Pontine%2C_Vatican_City_-_April_2007.jpg',
+        image: 'https://upload.wikimedia.org/wikipedia/commons/f/f5/Basilica_di_San_Pietro_in_Vaticano_September_2015-1a.jpg',
         hours: 'Basilica: daily 7:00–19:00 (18:00 in winter). Dome: daily 8:00–18:00 (17:00 winter)',
         price: 'Basilica: free. Dome by stairs: €8. Dome by lift then stairs: €10',
         highlights: [
@@ -233,7 +233,7 @@ const DESTINATIONS = [
     region: 'Tuscany',
     emoji: '🌸',
     tagline: 'Birthplace of the Renaissance',
-    heroImage: 'https://upload.wikimedia.org/wikipedia/commons/thumb/0/08/Firenze_2.jpg/1200px-Firenze_2.jpg',
+    heroImage: 'https://upload.wikimedia.org/wikipedia/commons/c/c7/Cattedrale_di_Santa_Maria_del_Fiore_%E2%80%93_Il_Duomo_di_Firenze.jpg',
 
     overview: `Florence (Firenze) is arguably the greatest concentration of Renaissance art and architecture in the world. In a city of just 370,000 people you'll find works by Botticelli, Michelangelo, Leonardo da Vinci, Raphael, Donatello and Brunelleschi within walking distance of each other.\n\nThe historic centre is a UNESCO World Heritage Site and completely walkable. The Arno river divides the city — the Oltrarno district on the south bank is quieter, more local, and often overlooked by tourists.`,
 
@@ -252,7 +252,7 @@ const DESTINATIONS = [
     neighborhoods: [
       {
         name: 'Duomo & Centro',
-        image: 'https://upload.wikimedia.org/wikipedia/commons/thumb/1/1d/Firenze_-_Cattedrale_di_Santa_Maria_del_Fiore.jpg/800px-Firenze_-_Cattedrale_di_Santa_Maria_del_Fiore.jpg',
+        image: 'https://upload.wikimedia.org/wikipedia/commons/c/c7/Cattedrale_di_Santa_Maria_del_Fiore_%E2%80%93_Il_Duomo_di_Firenze.jpg',
         description: 'The cathedral, Baptistery and Giotto\'s Bell Tower dominate. Surrounded by tourist shops but the streets hide excellent restaurants.',
         bestFor: 'First morning orientation, Duomo visit',
       },
@@ -281,7 +281,7 @@ const DESTINATIONS = [
     museums: [
       {
         name: 'Uffizi Gallery',
-        image: 'https://upload.wikimedia.org/wikipedia/commons/thumb/0/0b/Sandro_Botticelli_-_La_nascita_di_Venere_-_Google_Art_Project_-_edited.jpg/800px-Sandro_Botticelli_-_La_nascita_di_Venere_-_Google_Art_Project_-_edited.jpg',
+        image: 'https://upload.wikimedia.org/wikipedia/commons/0/0b/Sandro_Botticelli_-_La_nascita_di_Venere_-_Google_Art_Project_-_edited.jpg',
         address: 'Piazzale degli Uffizi 6, 50122 Firenze',
         mapQuery: 'Uffizi Gallery Florence Italy',
         hours: 'Tue–Sun 8:15–18:50. Closed Monday.',
@@ -303,7 +303,7 @@ const DESTINATIONS = [
       },
       {
         name: 'Accademia Gallery',
-        image: 'https://upload.wikimedia.org/wikipedia/commons/thumb/8/80/Michelangelo%27s_David_-_right_view_2.jpg/600px-Michelangelo%27s_David_-_right_view_2.jpg',
+        image: 'https://upload.wikimedia.org/wikipedia/commons/b/bb/%27David%27_by_Michelangelo_Fir_JBU004.jpg',
         address: 'Via Ricasoli 58–60, 50122 Firenze',
         mapQuery: 'Accademia Gallery Florence Italy',
         hours: 'Tue–Sun 8:15–18:50. Closed Monday.',
@@ -324,7 +324,7 @@ const DESTINATIONS = [
       },
       {
         name: 'Bargello',
-        image: 'https://upload.wikimedia.org/wikipedia/commons/thumb/6/60/Donatello%27s_David_Bargello.jpg/600px-Donatello%27s_David_Bargello.jpg',
+        image: 'https://upload.wikimedia.org/wikipedia/commons/1/1f/Donatello%2C_David_%28bronze%29_detail_of_legs.JPG',
         address: 'Via del Proconsolo 4, 50122 Firenze',
         mapQuery: 'Bargello Museum Florence Italy',
         hours: 'Daily 8:15–17:00 (extended hours Fri–Sat to 19:00 in summer). Closed 2nd & 4th Mon, 1st & 3rd Sun of month.',
@@ -345,7 +345,7 @@ const DESTINATIONS = [
       },
       {
         name: 'Museo dell\'Opera del Duomo',
-        image: 'https://upload.wikimedia.org/wikipedia/commons/thumb/8/8d/Ghiberti_porta_del_paradiso.jpg/600px-Ghiberti_porta_del_paradiso.jpg',
+        image: 'https://upload.wikimedia.org/wikipedia/commons/3/3a/Paradies_tuer_florenz.jpg',
         address: 'Piazza del Duomo 9, 50122 Firenze',
         mapQuery: 'Museo Opera del Duomo Florence Italy',
         hours: 'Mon–Sat 9:00–19:00 · Sun 13:00–18:00',
@@ -366,7 +366,7 @@ const DESTINATIONS = [
       },
       {
         name: 'Pitti Palace & Boboli Gardens',
-        image: 'https://upload.wikimedia.org/wikipedia/commons/thumb/8/8e/Palazzo_Pitti_Firenze_Apr_2008%281%29.jpg/800px-Palazzo_Pitti_Firenze_Apr_2008%281%29.jpg',
+        image: 'https://upload.wikimedia.org/wikipedia/commons/6/6a/Palazzo_Pitti_nel_tardo_pomeriggio.jpg',
         address: 'Piazza de\' Pitti 1, 50125 Firenze',
         mapQuery: 'Pitti Palace Florence Italy',
         hours: 'Tue–Sun 8:15–18:50 (Boboli Gardens closes 30 min later). Closed Monday.',
@@ -387,7 +387,7 @@ const DESTINATIONS = [
       },
       {
         name: 'Museo di San Marco',
-        image: 'https://upload.wikimedia.org/wikipedia/commons/thumb/a/a1/Fra_Angelico_-_Annunciation_%28San_Marco%29_-_WGA00613.jpg/800px-Fra_Angelico_-_Annunciation_%28San_Marco%29_-_WGA00613.jpg',
+        image: 'https://upload.wikimedia.org/wikipedia/commons/b/bc/Fra_Angelico_-_Annunciation.jpg',
         address: 'Piazza San Marco 3, 50121 Firenze',
         mapQuery: 'Museo San Marco Florence Italy',
         hours: 'Mon–Fri 8:15–13:50 · Sat–Sun 8:15–16:50. Closed 1st Mon and 3rd Sun of month.',
@@ -410,7 +410,7 @@ const DESTINATIONS = [
     churches: [
       {
         name: 'Florence Cathedral (Duomo) & Brunelleschi\'s Dome',
-        image: 'https://upload.wikimedia.org/wikipedia/commons/thumb/1/1d/Firenze_-_Cattedrale_di_Santa_Maria_del_Fiore.jpg/800px-Firenze_-_Cattedrale_di_Santa_Maria_del_Fiore.jpg',
+        image: 'https://upload.wikimedia.org/wikipedia/commons/c/c7/Cattedrale_di_Santa_Maria_del_Fiore_%E2%80%93_Il_Duomo_di_Firenze.jpg',
         hours: 'Cathedral: Mon–Sat 10:00–17:00 · Dome: Mon–Fri 8:30–19:00, Sat 8:30–17:40 · Bell Tower: daily 8:15–19:30',
         price: 'Duomo complex ticket €18 (Cathedral, Dome, Baptistery, Bell Tower, Crypt, Opera Museum)',
         highlights: [
@@ -437,6 +437,7 @@ const DESTINATIONS = [
       },
       {
         name: 'Basilica di Santa Croce',
+        image: 'https://upload.wikimedia.org/wikipedia/commons/2/2c/Basilica_di_Santa_Croce_%2812437%29.jpg',
         hours: 'Mon–Sat 9:30–17:30 · Sun 14:00–17:30',
         price: '€8 · Under 11 free',
         highlights: [
@@ -482,7 +483,7 @@ const DESTINATIONS = [
     region: 'Central Italy',
     emoji: '🌻',
     tagline: 'Rolling Hills & Medieval Towns',
-    heroImage: 'https://upload.wikimedia.org/wikipedia/commons/thumb/6/69/Val_d%27Orcia_pano.jpg/1200px-Val_d%27Orcia_pano.jpg',
+    heroImage: 'https://upload.wikimedia.org/wikipedia/commons/b/b3/I_cipressi_della_Val_D%27Orcia.jpg',
 
     overview: `Tuscany (Toscana) is the landscape most people picture when they imagine Italy — rolling green hills dotted with cypress trees, medieval hilltop towns, sunflower fields and world-class wine. Beyond Florence, the region offers Siena (Florence's great rival), the towers of San Gimignano, the thermal springs of Saturnia, and the Chianti wine country.\n\nMost Tuscan towns are best reached by car — public transport connects the major centres but misses the countryside villages. Consider renting a car for at least part of the trip.`,
 
@@ -501,13 +502,13 @@ const DESTINATIONS = [
     neighborhoods: [
       {
         name: 'Siena',
-        image: 'https://upload.wikimedia.org/wikipedia/commons/thumb/b/b8/Siena_Piazza_del_Campo.JPG/800px-Siena_Piazza_del_Campo.JPG',
+        image: 'https://upload.wikimedia.org/wikipedia/commons/0/0a/Siena5.jpg',
         description: 'Florence\'s great medieval rival. The Piazza del Campo (shell-shaped square) is one of Italy\'s greatest public spaces. The Duomo is extraordinarily ornate. Allow a full day.',
         bestFor: 'Medieval art, the Palio, Piazza del Campo',
       },
       {
         name: 'San Gimignano',
-        image: 'https://upload.wikimedia.org/wikipedia/commons/thumb/f/fd/San_Gimignano_Duomo_Square.jpg/800px-San_Gimignano_Duomo_Square.jpg',
+        image: 'https://upload.wikimedia.org/wikipedia/commons/0/0a/Siena5.jpg',
         description: 'The "medieval Manhattan" — 14 towers survive from the original 72 built by competing noble families. Touristy but genuinely impressive. Visit early morning or evening.',
         bestFor: 'Tower views, vernaccia wine, early morning atmosphere',
       },
@@ -536,7 +537,7 @@ const DESTINATIONS = [
     museums: [
       {
         name: 'Siena Cathedral (Duomo) & Museum Complex',
-        image: 'https://upload.wikimedia.org/wikipedia/commons/thumb/b/b0/Siena_Cattedrale_di_Santa_Maria_Assunta_August_2021.jpg/800px-Siena_Cattedrale_di_Santa_Maria_Assunta_August_2021.jpg',
+        image: 'https://upload.wikimedia.org/wikipedia/commons/7/7c/Duomo_di_Siena-9635.jpg',
         address: 'Piazza del Duomo 8, 53100 Siena',
         mapQuery: 'Siena Cathedral Duomo Italy',
         hours: 'Mon–Sat 10:30–19:00 · Sun 13:30–18:00 (hours vary by season)',
@@ -556,7 +557,7 @@ const DESTINATIONS = [
       },
       {
         name: 'Palazzo Pubblico & Torre del Mangia (Siena)',
-        image: 'https://upload.wikimedia.org/wikipedia/commons/thumb/3/3a/Piazza_del_Campo_Siena.jpg/800px-Piazza_del_Campo_Siena.jpg',
+        image: 'https://upload.wikimedia.org/wikipedia/commons/0/0a/Siena5.jpg',
         address: 'Piazza del Campo 1, 53100 Siena',
         mapQuery: 'Palazzo Pubblico Siena Italy',
         hours: 'Daily 10:00–19:00 (Nov–Feb closes 18:00)',
@@ -575,7 +576,7 @@ const DESTINATIONS = [
       },
       {
         name: 'MAEC — Museo dell\'Accademia Etrusca (Cortona)',
-        image: 'https://upload.wikimedia.org/wikipedia/commons/thumb/f/f1/MAEC_Cortona_-_lampadario_etrusco.jpg/600px-MAEC_Cortona_-_lampadario_etrusco.jpg',
+        image: 'https://upload.wikimedia.org/wikipedia/commons/b/b3/I_cipressi_della_Val_D%27Orcia.jpg',
         address: 'Piazza Signorelli 9, 52044 Cortona',
         mapQuery: 'MAEC Museum Cortona Italy',
         hours: 'Tue–Sun 10:00–19:00 (Nov–Mar closes 17:00). Closed Monday.',
@@ -594,7 +595,7 @@ const DESTINATIONS = [
       },
       {
         name: 'Museo Civico & Pinacoteca Nazionale (Siena)',
-        image: 'https://upload.wikimedia.org/wikipedia/commons/thumb/d/d2/Duccio_di_Buoninsegna_-_Maest%C3%A0_%28front%2C_detail%29_-_WGA06734.jpg/600px-Duccio_di_Buoninsegna_-_Maest%C3%A0_%28front%2C_detail%29_-_WGA06734.jpg',
+        image: 'https://upload.wikimedia.org/wikipedia/commons/7/7c/Duomo_di_Siena-9635.jpg',
         address: 'Via San Pietro 29, 53100 Siena',
         mapQuery: 'Pinacoteca Nazionale Siena Italy',
         hours: 'Mon 8:30–13:30 · Tue–Sat 8:15–19:15 · Sun 9:00–13:00',
