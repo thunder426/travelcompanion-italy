@@ -5,6 +5,7 @@ import {
 } from 'react-native';
 import * as Speech from 'expo-speech';
 import PHRASES from '../data/phrases';
+import { TICKET_INFO } from '../data/transitData';
 
 // ── Currency ──────────────────────────────────────────────────────────────────
 const CURRENCIES = [
@@ -216,16 +217,61 @@ function PhrasebookView() {
   );
 }
 
+// ── Transport View ────────────────────────────────────────────────────────────
+function TransportView() {
+  const [city, setCity] = useState('rome');
+  const info = TICKET_INFO[city];
+
+  return (
+    <ScrollView style={styles.flex} contentContainerStyle={{ padding: 16, paddingBottom: 40 }}>
+      {/* City toggle */}
+      <View style={styles.modeToggle}>
+        {[{ key: 'rome', label: '🏛️  Rome' }, { key: 'florence', label: '🌸  Florence' }].map(({ key, label }) => (
+          <TouchableOpacity
+            key={key}
+            style={[styles.modeBtn, city === key && styles.modeBtnActive]}
+            onPress={() => setCity(key)}
+          >
+            <Text style={[styles.modeBtnText, city === key && styles.modeBtnTextActive]}>{label}</Text>
+          </TouchableOpacity>
+        ))}
+      </View>
+
+      {/* Tickets */}
+      <Text style={tr.sectionLabel}>🎫 Tickets</Text>
+      {info.tickets.map((t, i) => (
+        <View key={i} style={tr.ticketCard}>
+          <View style={tr.ticketTop}>
+            <Text style={tr.ticketName}>{t.name}</Text>
+            <Text style={tr.ticketPrice}>{t.price}</Text>
+          </View>
+          <Text style={tr.ticketDuration}>{t.duration}</Text>
+          <Text style={tr.ticketNote}>{t.note}</Text>
+        </View>
+      ))}
+
+      {/* Tips */}
+      <Text style={tr.sectionLabel}>💡 Tips</Text>
+      {info.tips.map((tip, i) => (
+        <View key={i} style={tr.tipRow}>
+          <Text style={tr.tipText}>{tip}</Text>
+        </View>
+      ))}
+    </ScrollView>
+  );
+}
+
 // ── Essentials Screen ─────────────────────────────────────────────────────────
 export default function EssentialsScreen() {
-  const [mode, setMode] = useState('phrasebook'); // 'phrasebook' | 'currency'
+  const [mode, setMode] = useState('phrasebook'); // 'phrasebook' | 'currency' | 'transport'
 
   return (
     <View style={styles.container}>
       <View style={styles.modeToggle}>
         {[
-          { key: 'phrasebook', label: '🗣️  Phrasebook' },
-          { key: 'currency',   label: '💶  Currency'   },
+          { key: 'phrasebook', label: '🗣️' },
+          { key: 'currency',   label: '💶' },
+          { key: 'transport',  label: '🚇' },
         ].map(({ key, label }) => (
           <TouchableOpacity
             key={key}
@@ -239,7 +285,9 @@ export default function EssentialsScreen() {
         ))}
       </View>
 
-      {mode === 'phrasebook' ? <PhrasebookView /> : <CurrencyView />}
+      {mode === 'phrasebook' && <PhrasebookView />}
+      {mode === 'currency'   && <CurrencyView />}
+      {mode === 'transport'  && <TransportView />}
     </View>
   );
 }
@@ -325,4 +373,25 @@ const styles = StyleSheet.create({
   speakBtns: { flexDirection: 'row', gap: 6 },
   speakBtn: { padding: 4 },
   speakIcon: { fontSize: 20 },
+});
+
+const tr = StyleSheet.create({
+  sectionLabel: {
+    fontSize: 13, fontWeight: '700', color: '#e94560',
+    textTransform: 'uppercase', letterSpacing: 1, marginBottom: 10, marginTop: 16,
+  },
+  ticketCard: {
+    backgroundColor: '#1a1a2e', borderRadius: 12, padding: 14,
+    marginBottom: 10, borderWidth: 1, borderColor: '#2a2a50',
+  },
+  ticketTop: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 4 },
+  ticketName: { fontSize: 15, fontWeight: '700', color: '#fff', flex: 1 },
+  ticketPrice: { fontSize: 18, fontWeight: '800', color: '#e94560' },
+  ticketDuration: { fontSize: 12, color: '#888', marginBottom: 4 },
+  ticketNote: { fontSize: 13, color: '#aaa', lineHeight: 18 },
+  tipRow: {
+    backgroundColor: '#1a1a2e', borderRadius: 10, padding: 12,
+    marginBottom: 8, borderWidth: 1, borderColor: '#2a2a50',
+  },
+  tipText: { fontSize: 14, color: '#ccc', lineHeight: 20 },
 });
