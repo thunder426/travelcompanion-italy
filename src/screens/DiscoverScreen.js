@@ -2,6 +2,7 @@ import React, { useState, useRef } from 'react';
 import {
   View, Text, TouchableOpacity, StyleSheet,
   ScrollView, ActivityIndicator, Alert, FlatList,
+  Image, Linking,
 } from 'react-native';
 import { CameraView, useCameraPermissions } from 'expo-camera';
 import * as Speech from 'expo-speech';
@@ -15,18 +16,136 @@ const DEPTH_OPTIONS = [
   { key: 'deep',     label: 'Deep Dive', icon: '🔬' },
 ];
 
+// ── Site Detail View (museum / church full-page detail) ───────────────────────
+function SiteDetailView({ site, onBack }) {
+  const [imgFailed, setImgFailed] = useState(false);
+
+  function openMaps() {
+    const q = encodeURIComponent(site.mapQuery || site.name + ' Italy');
+    Linking.openURL(`https://maps.apple.com/?q=${q}`).catch(() =>
+      Linking.openURL(`https://www.google.com/maps/search/?api=1&query=${q}`)
+    );
+  }
+
+  return (
+    <View style={styles.flex}>
+      <ScrollView style={styles.flex} contentContainerStyle={{ paddingBottom: 50 }}>
+        {/* Hero image */}
+        {site.image && !imgFailed ? (
+          <Image
+            source={{ uri: site.image }}
+            style={sd.hero}
+            resizeMode="cover"
+            onError={() => setImgFailed(true)}
+          />
+        ) : (
+          <View style={[sd.hero, sd.heroPlaceholder]}>
+            <Text style={sd.heroEmoji}>🏛️</Text>
+          </View>
+        )}
+
+        {/* Back button overlaid at top of image */}
+        <TouchableOpacity style={sd.backBtn} onPress={onBack}>
+          <Text style={sd.backText}>‹ Back</Text>
+        </TouchableOpacity>
+
+        <View style={sd.content}>
+          <Text style={sd.name}>{site.name}</Text>
+
+          {/* Quick-info strip */}
+          {(site.hours || site.price || site.duration) && (
+            <View style={sd.infoStrip}>
+              {site.hours && (
+                <View style={sd.infoItem}>
+                  <Text style={sd.infoIcon}>🕐</Text>
+                  <Text style={sd.infoLabel}>Hours</Text>
+                  <Text style={sd.infoValue}>{site.hours}</Text>
+                </View>
+              )}
+              {site.price && (
+                <View style={[sd.infoItem, site.hours && sd.infoItemBorder]}>
+                  <Text style={sd.infoIcon}>💶</Text>
+                  <Text style={sd.infoLabel}>Price</Text>
+                  <Text style={sd.infoValue}>{site.price}</Text>
+                </View>
+              )}
+              {site.duration && (
+                <View style={[sd.infoItem, (site.hours || site.price) && sd.infoItemBorder]}>
+                  <Text style={sd.infoIcon}>⏱</Text>
+                  <Text style={sd.infoLabel}>Allow</Text>
+                  <Text style={sd.infoValue}>{site.duration}</Text>
+                </View>
+              )}
+            </View>
+          )}
+
+          {/* Best time callout */}
+          {site.bestTime && (
+            <View style={sd.bestTimeBox}>
+              <Text style={sd.bestTimeTitle}>⏰  Best time to visit</Text>
+              <Text style={sd.bestTimeText}>{site.bestTime}</Text>
+            </View>
+          )}
+
+          {/* Address */}
+          {site.address && (
+            <Text style={sd.address}>📍 {site.address}</Text>
+          )}
+
+          {/* Description */}
+          <Text style={sd.description}>{site.description}</Text>
+
+          {/* Don't-miss highlights */}
+          {site.highlights?.length > 0 && (
+            <View style={sd.highlightsBox}>
+              <Text style={sd.highlightsTitle}>✨  Don't miss</Text>
+              {site.highlights.map((h, i) => (
+                <View key={i} style={sd.highlightRow}>
+                  <Text style={sd.highlightDot}>▸</Text>
+                  <Text style={sd.highlightText}>{h}</Text>
+                </View>
+              ))}
+            </View>
+          )}
+
+          {/* Tip */}
+          {site.tip && (
+            <View style={sd.tipBox}>
+              <Text style={sd.tipText}>💡  {site.tip}</Text>
+            </View>
+          )}
+
+          {/* Open in Maps */}
+          {site.mapQuery && (
+            <TouchableOpacity style={sd.mapsBtn} onPress={openMaps}>
+              <Text style={sd.mapsBtnText}>🗺  Open in Maps</Text>
+            </TouchableOpacity>
+          )}
+        </View>
+      </ScrollView>
+    </View>
+  );
+}
+
 // ── Destination Detail View ───────────────────────────────────────────────────
 function DestinationDetail({ destination, isActive, onSetActive, onBack }) {
   const [section, setSection] = useState('overview');
+  const [selectedSite, setSelectedSite] = useState(null);
+  const [heroFailed, setHeroFailed] = useState(false);
 
   const SECTIONS = [
-    { key: 'overview',       label: 'Overview'    },
-    { key: 'neighborhoods',  label: 'Areas'       },
-    { key: 'museums',        label: 'Museums'     },
-    { key: 'churches',       label: 'Churches'    },
-    { key: 'food',           label: 'Food'        },
-    { key: 'practical',      label: 'Tips'        },
+    { key: 'overview',      label: 'Overview'  },
+    { key: 'neighborhoods', label: 'Areas'     },
+    { key: 'museums',       label: 'Museums'   },
+    { key: 'churches',      label: 'Churches'  },
+    { key: 'food',          label: 'Food'      },
+    { key: 'practical',     label: 'Tips'      },
   ];
+
+  // Show site detail when a museum / church is tapped
+  if (selectedSite) {
+    return <SiteDetailView site={selectedSite} onBack={() => setSelectedSite(null)} />;
+  }
 
   return (
     <View style={styles.container}>
@@ -69,8 +188,18 @@ function DestinationDetail({ destination, isActive, onSetActive, onBack }) {
 
       <ScrollView style={styles.flex} contentContainerStyle={{ padding: 16, paddingBottom: 40 }}>
 
+        {/* ── Overview ── */}
         {section === 'overview' && (
           <>
+            {/* Hero image */}
+            {destination.heroImage && !heroFailed ? (
+              <Image
+                source={{ uri: destination.heroImage }}
+                style={dv.heroImg}
+                resizeMode="cover"
+                onError={() => setHeroFailed(true)}
+              />
+            ) : null}
             <Text style={dv.tagline}>{destination.tagline}</Text>
             <Text style={dv.body}>{destination.overview}</Text>
             <View style={dv.divider} />
@@ -79,6 +208,7 @@ function DestinationDetail({ destination, isActive, onSetActive, onBack }) {
           </>
         )}
 
+        {/* ── Practical tips ── */}
         {section === 'practical' && destination.practical.map((tip, i) => (
           <View key={i} style={dv.tipCard}>
             <Text style={dv.tipIcon}>{tip.icon}</Text>
@@ -86,39 +216,94 @@ function DestinationDetail({ destination, isActive, onSetActive, onBack }) {
           </View>
         ))}
 
+        {/* ── Neighborhoods ── */}
         {section === 'neighborhoods' && destination.neighborhoods.map((n, i) => (
           <View key={i} style={dv.card}>
+            {n.image ? (
+              <NeighbourhoodImage uri={n.image} />
+            ) : null}
             <Text style={dv.cardTitle}>{n.name}</Text>
+            {n.bestFor && <Text style={dv.cardBestFor}>Best for: {n.bestFor}</Text>}
             <Text style={dv.cardBody}>{n.description}</Text>
           </View>
         ))}
 
+        {/* ── Museums ── */}
         {section === 'museums' && destination.museums.map((m, i) => (
-          <View key={i} style={dv.card}>
-            <Text style={dv.cardTitle}>{m.name}</Text>
-            <Text style={dv.cardBody}>{m.description}</Text>
-            {m.tip && (
-              <View style={dv.cardTip}>
-                <Text style={dv.cardTipText}>💡 {m.tip}</Text>
+          <TouchableOpacity key={i} style={dv.siteCard} onPress={() => setSelectedSite(m)} activeOpacity={0.8}>
+            <SiteThumb uri={m.image} fallback="🏛️" />
+            <View style={dv.siteCardBody}>
+              <Text style={dv.siteCardName}>{m.name}</Text>
+              <View style={dv.siteQuickRow}>
+                {m.hours && <Text style={dv.siteQuickChip} numberOfLines={1}>🕐 {m.hours.split('·')[0].split(',')[0].trim()}</Text>}
+                {m.price && <Text style={dv.siteQuickChip} numberOfLines={1}>💶 {m.price.split('·')[0].trim()}</Text>}
               </View>
-            )}
-          </View>
+              {m.duration && <Text style={dv.siteDuration}>⏱ {m.duration}</Text>}
+              <Text style={dv.siteCardDesc} numberOfLines={2}>{m.description}</Text>
+              <Text style={dv.tapHint}>Tap for full guide ›</Text>
+            </View>
+          </TouchableOpacity>
         ))}
 
+        {/* ── Churches ── */}
         {section === 'churches' && destination.churches.map((c, i) => (
-          <View key={i} style={dv.card}>
-            <Text style={dv.cardTitle}>{c.name}</Text>
-            <Text style={dv.cardBody}>{c.description}</Text>
-          </View>
+          <TouchableOpacity key={i} style={dv.siteCard} onPress={() => setSelectedSite(c)} activeOpacity={0.8}>
+            <SiteThumb uri={c.image} fallback="⛪" />
+            <View style={dv.siteCardBody}>
+              <Text style={dv.siteCardName}>{c.name}</Text>
+              <View style={dv.siteQuickRow}>
+                {c.hours && <Text style={dv.siteQuickChip} numberOfLines={1}>🕐 {c.hours.split('·')[0].trim()}</Text>}
+                {c.price && <Text style={dv.siteQuickChip} numberOfLines={1}>💶 {c.price.split('·')[0].trim()}</Text>}
+              </View>
+              <Text style={dv.siteCardDesc} numberOfLines={2}>{c.description}</Text>
+              <Text style={dv.tapHint}>Tap for highlights ›</Text>
+            </View>
+          </TouchableOpacity>
         ))}
 
+        {/* ── Food ── */}
         {section === 'food' && destination.food.map((f, i) => (
           <View key={i} style={dv.card}>
             <Text style={dv.cardTitle}>{f.name}</Text>
             <Text style={dv.cardBody}>{f.description}</Text>
           </View>
         ))}
+
       </ScrollView>
+    </View>
+  );
+}
+
+// Small helper: neighbourhood image with error fallback
+function NeighbourhoodImage({ uri }) {
+  const [failed, setFailed] = useState(false);
+  if (failed) return null;
+  return (
+    <Image
+      source={{ uri }}
+      style={dv.neighbourhoodImg}
+      resizeMode="cover"
+      onError={() => setFailed(true)}
+    />
+  );
+}
+
+// Small helper: site thumbnail with fallback emoji
+function SiteThumb({ uri, fallback = '🏛️' }) {
+  const [failed, setFailed] = useState(false);
+  if (uri && !failed) {
+    return (
+      <Image
+        source={{ uri }}
+        style={dv.siteThumb}
+        resizeMode="cover"
+        onError={() => setFailed(true)}
+      />
+    );
+  }
+  return (
+    <View style={[dv.siteThumb, dv.siteThumbPlaceholder]}>
+      <Text style={{ fontSize: 28 }}>{fallback}</Text>
     </View>
   );
 }
@@ -163,32 +348,56 @@ function GuideView() {
         keyExtractor={d => d.id}
         contentContainerStyle={{ padding: 16, gap: 14 }}
         renderItem={({ item }) => (
-          <TouchableOpacity
-            style={[dv.destCard, activeId === item.id && dv.destCardActive]}
+          <DestinationCard
+            item={item}
+            isActive={activeId === item.id}
             onPress={() => setSelected(item)}
-            activeOpacity={0.8}
-          >
-            <Text style={dv.destEmoji}>{item.emoji}</Text>
-            <View style={dv.destInfo}>
-              <Text style={dv.destName}>{item.name}</Text>
-              <Text style={dv.destRegion}>{item.region}</Text>
-              <Text style={dv.destTagline}>{item.tagline}</Text>
-            </View>
-            <View style={dv.destRight}>
-              {activeId === item.id && <Text style={dv.activePin}>📍</Text>}
-              <Text style={dv.destArrow}>›</Text>
-            </View>
-          </TouchableOpacity>
+          />
         )}
       />
     </View>
   );
 }
 
+function DestinationCard({ item, isActive, onPress }) {
+  const [imgFailed, setImgFailed] = useState(false);
+  return (
+    <TouchableOpacity
+      style={[dv.destCard, isActive && dv.destCardActive]}
+      onPress={onPress}
+      activeOpacity={0.8}
+    >
+      {item.heroImage && !imgFailed ? (
+        <Image
+          source={{ uri: item.heroImage }}
+          style={dv.destHeroImg}
+          resizeMode="cover"
+          onError={() => setImgFailed(true)}
+        />
+      ) : null}
+      <View style={dv.destCardContent}>
+        <Text style={dv.destEmoji}>{item.emoji}</Text>
+        <View style={dv.destInfo}>
+          <Text style={dv.destName}>{item.name}</Text>
+          <Text style={dv.destRegion}>{item.region}</Text>
+          <Text style={dv.destTagline}>{item.tagline}</Text>
+          <Text style={dv.destMuseumCount}>
+            {item.museums.length} sites · {item.churches.length} churches · {item.neighborhoods.length} areas
+          </Text>
+        </View>
+        <View style={dv.destRight}>
+          {isActive && <Text style={dv.activePin}>📍</Text>}
+          <Text style={dv.destArrow}>›</Text>
+        </View>
+      </View>
+    </TouchableOpacity>
+  );
+}
+
 // ── Camera + Museum/Street Views ──────────────────────────────────────────────
 export default function DiscoverScreen() {
   const [permission, requestPermission] = useCameraPermissions();
-  const [mode, setMode]         = useState('guide'); // 'guide' | 'museum' | 'street'
+  const [mode, setMode]         = useState('guide');
   const [cameraActive, setCameraActive] = useState(false);
   const [loading, setLoading]   = useState(false);
   const [result, setResult]     = useState(null);
@@ -220,7 +429,7 @@ export default function DiscoverScreen() {
     } else {
       setSpeaking(true);
       Speech.speak(result, {
-        language: 'en', rate: 0.9,
+        language: 'en-US', rate: 0.9,
         onDone: () => setSpeaking(false),
         onError: () => setSpeaking(false),
       });
@@ -230,17 +439,7 @@ export default function DiscoverScreen() {
   if (!permission?.granted && mode !== 'guide') {
     return (
       <View style={styles.container}>
-        <View style={styles.modeToggle}>
-          {[
-            { key: 'guide',  label: '🗺️  Guide'    },
-            { key: 'museum', label: '🏛️  Museum'   },
-            { key: 'street', label: '🔍  Explorer' },
-          ].map(({ key, label }) => (
-            <TouchableOpacity key={key} style={[styles.modeBtn, mode === key && styles.modeBtnActive]} onPress={() => setMode(key)}>
-              <Text style={[styles.modeBtnText, mode === key && styles.modeBtnTextActive]}>{label}</Text>
-            </TouchableOpacity>
-          ))}
-        </View>
+        <ModeToggle mode={mode} setMode={setMode} setResult={setResult} />
         <View style={styles.centered}>
           <Text style={styles.permText}>Camera access is needed.</Text>
           <TouchableOpacity style={styles.actionBtn} onPress={requestPermission}>
@@ -270,27 +469,10 @@ export default function DiscoverScreen() {
 
   return (
     <View style={styles.container}>
-      {/* Mode toggle */}
-      <View style={styles.modeToggle}>
-        {[
-          { key: 'guide',  label: '🗺️  Guide'    },
-          { key: 'museum', label: '🏛️  Museum'   },
-          { key: 'street', label: '🔍  Explorer' },
-        ].map(({ key, label }) => (
-          <TouchableOpacity
-            key={key}
-            style={[styles.modeBtn, mode === key && styles.modeBtnActive]}
-            onPress={() => { setMode(key); setResult(null); }}
-          >
-            <Text style={[styles.modeBtnText, mode === key && styles.modeBtnTextActive]}>{label}</Text>
-          </TouchableOpacity>
-        ))}
-      </View>
+      <ModeToggle mode={mode} setMode={setMode} setResult={setResult} />
 
-      {/* Guide tab */}
       {mode === 'guide' && <GuideView />}
 
-      {/* Museum / Street tabs */}
       {(mode === 'museum' || mode === 'street') && (
         <>
           {mode === 'museum' && !result && (
@@ -316,7 +498,7 @@ export default function DiscoverScreen() {
               </Text>
             </View>
           ) : result ? (
-            <ScrollView style={styles.flex}>
+            <ScrollView style={styles.flex} contentContainerStyle={{ padding: 16 }}>
               <Text style={styles.resultLabel}>{mode === 'museum' ? 'Guide' : 'Discovery'}</Text>
               <Text style={styles.resultText}>{result}</Text>
               <View style={styles.actionRow}>
@@ -347,6 +529,27 @@ export default function DiscoverScreen() {
   );
 }
 
+function ModeToggle({ mode, setMode, setResult }) {
+  return (
+    <View style={styles.modeToggle}>
+      {[
+        { key: 'guide',  label: '🗺️  Guide'    },
+        { key: 'museum', label: '🏛️  Museum'   },
+        { key: 'street', label: '🔍  Explorer' },
+      ].map(({ key, label }) => (
+        <TouchableOpacity
+          key={key}
+          style={[styles.modeBtn, mode === key && styles.modeBtnActive]}
+          onPress={() => { setMode(key); setResult?.(null); }}
+        >
+          <Text style={[styles.modeBtnText, mode === key && styles.modeBtnTextActive]}>{label}</Text>
+        </TouchableOpacity>
+      ))}
+    </View>
+  );
+}
+
+// ── Styles ─────────────────────────────────────────────────────────────────────
 const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: '#0f0f1a', padding: 16 },
   flex: { flex: 1 },
@@ -397,26 +600,113 @@ const dv = StyleSheet.create({
   tabActive: { borderColor: '#e94560', backgroundColor: '#2a1020' },
   tabText: { color: '#888', fontSize: 13, fontWeight: '600' },
   tabTextActive: { color: '#e94560' },
+
+  heroImg: { width: '100%', height: 180, borderRadius: 14, marginBottom: 14 },
   tagline: { fontSize: 16, color: '#e94560', fontStyle: 'italic', marginBottom: 12 },
   body: { fontSize: 15, color: '#ccc', lineHeight: 24 },
   divider: { height: 1, backgroundColor: '#2a2a50', marginVertical: 16 },
   sectionTitle: { fontSize: 16, fontWeight: '700', color: '#fff', marginBottom: 8 },
-  card: { backgroundColor: '#1a1a2e', borderRadius: 12, padding: 14, marginBottom: 12, borderWidth: 1, borderColor: '#2a2a50' },
-  cardTitle: { fontSize: 15, fontWeight: '700', color: '#fff', marginBottom: 6 },
+
+  // Plain info cards (food, etc.)
+  card: { backgroundColor: '#1a1a2e', borderRadius: 12, padding: 14, marginBottom: 12, borderWidth: 1, borderColor: '#2a2a50', overflow: 'hidden' },
+  cardTitle: { fontSize: 15, fontWeight: '700', color: '#fff', marginBottom: 4 },
+  cardBestFor: { fontSize: 12, color: '#e94560', fontStyle: 'italic', marginBottom: 6 },
   cardBody: { fontSize: 14, color: '#aaa', lineHeight: 21 },
-  cardTip: { backgroundColor: '#1e2a1e', borderRadius: 8, padding: 10, marginTop: 8 },
-  cardTipText: { fontSize: 13, color: '#6fcf97', lineHeight: 19 },
+
+  // Neighbourhood image
+  neighbourhoodImg: { width: '100%', height: 130, borderRadius: 8, marginBottom: 10 },
+
+  // Tip cards
   tipCard: { flexDirection: 'row', alignItems: 'flex-start', gap: 12, marginBottom: 14, backgroundColor: '#1a1a2e', borderRadius: 10, padding: 12, borderWidth: 1, borderColor: '#2a2a50' },
   tipIcon: { fontSize: 20, width: 24 },
   tipText: { flex: 1, fontSize: 14, color: '#ccc', lineHeight: 21 },
-  destCard: { flexDirection: 'row', alignItems: 'center', backgroundColor: '#1a1a2e', borderRadius: 16, padding: 16, borderWidth: 1, borderColor: '#2a2a50' },
+
+  // Site cards (museums, churches) — horizontal layout with thumbnail
+  siteCard: {
+    flexDirection: 'row', backgroundColor: '#1a1a2e', borderRadius: 14,
+    marginBottom: 14, borderWidth: 1, borderColor: '#2a2a50', overflow: 'hidden',
+  },
+  siteThumb: { width: 100, height: 130 },
+  siteThumbPlaceholder: { backgroundColor: '#1e1e35', alignItems: 'center', justifyContent: 'center' },
+  siteCardBody: { flex: 1, padding: 12, gap: 4 },
+  siteCardName: { fontSize: 14, fontWeight: '700', color: '#fff', lineHeight: 19 },
+  siteQuickRow: { flexDirection: 'row', gap: 6, flexWrap: 'wrap' },
+  siteQuickChip: { fontSize: 11, color: '#aaa', backgroundColor: '#0f0f1a', borderRadius: 6, paddingHorizontal: 6, paddingVertical: 2, overflow: 'hidden' },
+  siteDuration: { fontSize: 11, color: '#666' },
+  siteCardDesc: { fontSize: 13, color: '#888', lineHeight: 18 },
+  tapHint: { fontSize: 12, color: '#e94560', fontWeight: '600', marginTop: 2 },
+
+  // Destination list cards
+  destCard: { backgroundColor: '#1a1a2e', borderRadius: 16, borderWidth: 1, borderColor: '#2a2a50', overflow: 'hidden' },
   destCardActive: { borderColor: '#e94560', backgroundColor: '#1f1220' },
-  destEmoji: { fontSize: 40, marginRight: 14 },
+  destHeroImg: { width: '100%', height: 130 },
+  destCardContent: { flexDirection: 'row', alignItems: 'center', padding: 14 },
+  destEmoji: { fontSize: 36, marginRight: 12 },
   destInfo: { flex: 1 },
   destName: { fontSize: 20, fontWeight: '700', color: '#fff' },
   destRegion: { fontSize: 13, color: '#888', marginTop: 2 },
   destTagline: { fontSize: 13, color: '#e94560', marginTop: 4, fontStyle: 'italic' },
+  destMuseumCount: { fontSize: 11, color: '#555', marginTop: 4 },
   destRight: { alignItems: 'center', gap: 4 },
   activePin: { fontSize: 16 },
   destArrow: { fontSize: 24, color: '#555' },
+});
+
+// Site detail styles
+const sd = StyleSheet.create({
+  hero: { width: '100%', height: 260 },
+  heroPlaceholder: { backgroundColor: '#1e1e35', alignItems: 'center', justifyContent: 'center' },
+  heroEmoji: { fontSize: 60 },
+
+  backBtn: {
+    position: 'absolute', top: 16, left: 16,
+    backgroundColor: 'rgba(15,15,26,0.80)', borderRadius: 20,
+    paddingVertical: 6, paddingHorizontal: 14,
+  },
+  backText: { color: '#e94560', fontSize: 15, fontWeight: '700' },
+
+  content: { padding: 16 },
+  name: { fontSize: 22, fontWeight: '800', color: '#fff', marginBottom: 14 },
+
+  infoStrip: {
+    flexDirection: 'row', backgroundColor: '#1a1a2e', borderRadius: 12,
+    borderWidth: 1, borderColor: '#2a2a50', marginBottom: 14, overflow: 'hidden',
+  },
+  infoItem: { flex: 1, padding: 12, gap: 3 },
+  infoItemBorder: { borderLeftWidth: 1, borderLeftColor: '#2a2a50' },
+  infoIcon: { fontSize: 16 },
+  infoLabel: { fontSize: 10, color: '#666', textTransform: 'uppercase', letterSpacing: 0.8, fontWeight: '700' },
+  infoValue: { fontSize: 12, color: '#ccc', lineHeight: 17 },
+
+  bestTimeBox: {
+    backgroundColor: '#1a2a1a', borderRadius: 10, padding: 12,
+    marginBottom: 14, borderWidth: 1, borderColor: '#2a502a',
+  },
+  bestTimeTitle: { fontSize: 12, fontWeight: '700', color: '#6fcf97', marginBottom: 4 },
+  bestTimeText: { fontSize: 13, color: '#a8d8b8', lineHeight: 19 },
+
+  address: { fontSize: 13, color: '#666', marginBottom: 12 },
+
+  description: { fontSize: 15, color: '#ccc', lineHeight: 24, marginBottom: 18 },
+
+  highlightsBox: {
+    backgroundColor: '#1a1a2e', borderRadius: 12, padding: 14,
+    marginBottom: 14, borderWidth: 1, borderColor: '#2a2a50',
+  },
+  highlightsTitle: { fontSize: 13, fontWeight: '800', color: '#e94560', textTransform: 'uppercase', letterSpacing: 0.8, marginBottom: 10 },
+  highlightRow: { flexDirection: 'row', gap: 8, marginBottom: 8 },
+  highlightDot: { color: '#e94560', fontSize: 14, marginTop: 1 },
+  highlightText: { flex: 1, fontSize: 14, color: '#ddd', lineHeight: 20 },
+
+  tipBox: {
+    backgroundColor: '#1e2a1e', borderRadius: 10, padding: 12,
+    marginBottom: 16, borderWidth: 1, borderColor: '#2a502a',
+  },
+  tipText: { fontSize: 14, color: '#a8d8b8', lineHeight: 21 },
+
+  mapsBtn: {
+    backgroundColor: '#1e1e35', borderRadius: 14, paddingVertical: 16,
+    alignItems: 'center', borderWidth: 1, borderColor: '#e94560',
+  },
+  mapsBtnText: { color: '#e94560', fontSize: 16, fontWeight: '700' },
 });
