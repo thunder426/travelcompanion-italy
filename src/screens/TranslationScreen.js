@@ -160,7 +160,11 @@ export default function TranslationScreen() {
                 <Text style={styles.resultText}>{result}</Text>
                 <TouchableOpacity
                   style={styles.speakBtn}
-                  onPress={() => Speech.speak(result, { language: pair.to === 'it' ? 'it-IT' : pair.to === 'zh' ? 'zh-CN' : 'en-US', rate: 0.9 })}
+                  onPress={async () => {
+                    await Speech.stop();
+                    const locale = pair.to === 'it' ? 'it-IT' : pair.to === 'zh' ? 'zh-Hans' : 'en-US';
+                    Speech.speak(result, { language: locale, rate: 0.9, onError: () => Speech.speak(result, { rate: 0.9 }) });
+                  }}
                 >
                   <Text style={styles.speakBtnText}>🔊  Speak</Text>
                 </TouchableOpacity>

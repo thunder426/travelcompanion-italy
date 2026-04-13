@@ -120,9 +120,23 @@ function PhrasebookView() {
       : cat.items,
   })).filter(s => s.data.length > 0);
 
-  function speak(text, lang) {
-    const locale = lang === 'it' ? 'it-IT' : lang === 'zh' ? 'zh-CN' : 'en-US';
-    Speech.speak(text, { language: locale, rate: 0.85 });
+  async function speak(text, lang) {
+    // Stop anything currently playing
+    await Speech.stop();
+
+    // iOS uses 'zh-Hans' for Simplified Chinese, not 'zh-CN'
+    const locale = lang === 'it' ? 'it-IT'
+                 : lang === 'zh' ? 'zh-Hans'
+                 : 'en-US';
+
+    Speech.speak(text, {
+      language: locale,
+      rate: 0.85,
+      onError: () => {
+        // Language pack not installed — fall back to device default voice
+        Speech.speak(text, { rate: 0.85 });
+      },
+    });
   }
 
   function toggleExpand(key) {
