@@ -147,7 +147,7 @@ export default function MapScreen() {
         {showTransit && city.transitLines.map(line => (
           <Polyline
             key={line.id}
-            coordinates={line.coordinates}
+            coordinates={line.stations.map(s => s.coordinate)}
             strokeColor={line.color}
             strokeWidth={4}
             lineDashPattern={line.type === 'bus' ? [8, 4] : undefined}

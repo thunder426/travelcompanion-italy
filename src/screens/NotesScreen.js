@@ -39,16 +39,21 @@ async function scheduleReminder(title, body, unixTs) {
     Alert.alert('Permission needed', 'Please allow notifications in Settings to use reminders.');
     return null;
   }
-  const trigger = new Date(unixTs * 1000);
-  if (trigger <= new Date()) {
+  const date = new Date(unixTs * 1000);
+  if (date <= new Date()) {
     Alert.alert('Invalid time', 'Please choose a time in the future.');
     return null;
   }
-  const id = await Notifications.scheduleNotificationAsync({
-    content: { title: '✈️ Travel Reminder', body: title + (body ? `\n${body}` : ''), sound: true },
-    trigger,
-  });
-  return id;
+  try {
+    const id = await Notifications.scheduleNotificationAsync({
+      content: { title: '✈️ Travel Reminder', body: title + (body ? `\n${body}` : ''), sound: true },
+      trigger: { type: Notifications.SchedulableTriggerInputTypes.DATE, date },
+    });
+    return id;
+  } catch (e) {
+    Alert.alert('Error', 'Could not schedule reminder: ' + e.message);
+    return null;
+  }
 }
 
 async function cancelReminder(notificationId) {
@@ -69,9 +74,11 @@ const QUICK_OPTIONS = [
 ];
 
 function ReminderModal({ visible, current, onSet, onClear, onClose }) {
-  const [customHour, setCustomHour]   = useState('09');
-  const [customMin,  setCustomMin]    = useState('00');
+  const defaultPlus1h = new Date(Date.now() + 3600000);
+  const [customHour, setCustomHour]   = useState(String(defaultPlus1h.getHours()).padStart(2, '0'));
+  const [customMin,  setCustomMin]    = useState(String(defaultPlus1h.getMinutes()).padStart(2, '0'));
   const [daysAhead,  setDaysAhead]    = useState(0); // 0=today, 1=tomorrow...
+  const [inputError, setInputError]   = useState('');
 
   function applyQuick(opt) {
     const ts = opt.fn ? opt.fn() : Math.floor(Date.now() / 1000) + opt.offset;
@@ -79,15 +86,20 @@ function ReminderModal({ visible, current, onSet, onClear, onClose }) {
   }
 
   function applyCustom() {
+    setInputError('');
     const h = parseInt(customHour, 10);
     const m = parseInt(customMin,  10);
     if (isNaN(h) || isNaN(m) || h < 0 || h > 23 || m < 0 || m > 59) {
-      Alert.alert('Invalid time', 'Enter a valid hour (0-23) and minute (0-59).');
+      setInputError('Enter a valid hour (0–23) and minute (0–59).');
       return;
     }
     const d = new Date();
     d.setDate(d.getDate() + daysAhead);
     d.setHours(h, m, 0, 0);
+    if (d <= new Date()) {
+      setInputError('That time has already passed — pick a future time.');
+      return;
+    }
     onSet(Math.floor(d / 1000));
   }
 
@@ -95,62 +107,70 @@ function ReminderModal({ visible, current, onSet, onClear, onClose }) {
 
   return (
     <Modal visible={visible} animationType="slide" transparent onRequestClose={onClose}>
-      <View style={rm.overlay}>
+      <KeyboardAvoidingView
+        style={rm.overlay}
+        behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+      >
         <View style={rm.sheet}>
           <View style={rm.header}>
             <Text style={rm.title}>Set Reminder</Text>
             <TouchableOpacity onPress={onClose}><Text style={rm.close}>✕</Text></TouchableOpacity>
           </View>
 
-          {current && (
-            <View style={rm.currentBox}>
-              <Text style={rm.currentLabel}>Current: {formatReminderTime(current)}</Text>
-              <TouchableOpacity onPress={onClear}>
-                <Text style={rm.clearText}>Remove</Text>
-              </TouchableOpacity>
-            </View>
-          )}
+          <ScrollView keyboardShouldPersistTaps="handled" showsVerticalScrollIndicator={false}>
+            {current && (
+              <View style={rm.currentBox}>
+                <Text style={rm.currentLabel}>Current: {formatReminderTime(current)}</Text>
+                <TouchableOpacity onPress={onClear}>
+                  <Text style={rm.clearText}>Remove</Text>
+                </TouchableOpacity>
+              </View>
+            )}
 
-          {/* Quick options */}
-          <Text style={rm.sectionLabel}>Quick</Text>
-          {QUICK_OPTIONS.map(opt => (
-            <TouchableOpacity key={opt.label} style={rm.optionRow} onPress={() => applyQuick(opt)}>
-              <Text style={rm.optionText}>{opt.label}</Text>
-              <Text style={rm.arrow}>›</Text>
-            </TouchableOpacity>
-          ))}
-
-          {/* Custom */}
-          <Text style={rm.sectionLabel}>Custom</Text>
-          <ScrollView horizontal showsHorizontalScrollIndicator={false} style={rm.dayScroll}>
-            {dayLabels.map((lbl, i) => (
-              <TouchableOpacity
-                key={lbl}
-                style={[rm.dayBtn, daysAhead === i && rm.dayBtnActive]}
-                onPress={() => setDaysAhead(i)}
-              >
-                <Text style={[rm.dayBtnText, daysAhead === i && rm.dayBtnTextActive]}>{lbl}</Text>
+            {/* Quick options */}
+            <Text style={rm.sectionLabel}>Quick</Text>
+            {QUICK_OPTIONS.map(opt => (
+              <TouchableOpacity key={opt.label} style={rm.optionRow} onPress={() => applyQuick(opt)}>
+                <Text style={rm.optionText}>{opt.label}</Text>
+                <Text style={rm.arrow}>›</Text>
               </TouchableOpacity>
             ))}
+
+            {/* Custom */}
+            <Text style={rm.sectionLabel}>Custom</Text>
+            <ScrollView horizontal showsHorizontalScrollIndicator={false} style={rm.dayScroll}>
+              {dayLabels.map((lbl, i) => (
+                <TouchableOpacity
+                  key={lbl}
+                  style={[rm.dayBtn, daysAhead === i && rm.dayBtnActive]}
+                  onPress={() => setDaysAhead(i)}
+                >
+                  <Text style={[rm.dayBtnText, daysAhead === i && rm.dayBtnTextActive]}>{lbl}</Text>
+                </TouchableOpacity>
+              ))}
+            </ScrollView>
+            <View style={rm.timeRow}>
+              <TextInput
+                style={rm.timeInput} value={customHour}
+                onChangeText={v => { setCustomHour(v); setInputError(''); }}
+                keyboardType="number-pad"
+                maxLength={2} placeholder="HH" placeholderTextColor="#555"
+              />
+              <Text style={rm.timeSep}>:</Text>
+              <TextInput
+                style={rm.timeInput} value={customMin}
+                onChangeText={v => { setCustomMin(v); setInputError(''); }}
+                keyboardType="number-pad"
+                maxLength={2} placeholder="MM" placeholderTextColor="#555"
+              />
+              <TouchableOpacity style={rm.setBtn} onPress={applyCustom}>
+                <Text style={rm.setBtnText}>Set</Text>
+              </TouchableOpacity>
+            </View>
+            {inputError ? <Text style={rm.errorText}>{inputError}</Text> : null}
           </ScrollView>
-          <View style={rm.timeRow}>
-            <TextInput
-              style={rm.timeInput} value={customHour}
-              onChangeText={setCustomHour} keyboardType="number-pad"
-              maxLength={2} placeholder="HH" placeholderTextColor="#555"
-            />
-            <Text style={rm.timeSep}>:</Text>
-            <TextInput
-              style={rm.timeInput} value={customMin}
-              onChangeText={setCustomMin} keyboardType="number-pad"
-              maxLength={2} placeholder="MM" placeholderTextColor="#555"
-            />
-            <TouchableOpacity style={rm.setBtn} onPress={applyCustom}>
-              <Text style={rm.setBtnText}>Set</Text>
-            </TouchableOpacity>
-          </View>
         </View>
-      </View>
+      </KeyboardAvoidingView>
     </Modal>
   );
 }
@@ -173,6 +193,7 @@ function NoteEditor({ note, onSave, onCancel }) {
   }
 
   async function handleSetReminder(ts) {
+    setShowReminder(false);
     await cancelReminder(notifId);
     const id = await scheduleReminder(title.trim() || 'Note reminder', body.trim(), ts);
     if (id) {
@@ -181,14 +202,13 @@ function NoteEditor({ note, onSave, onCancel }) {
       // Update DB immediately if editing
       if (note?.id) saveNote(title.trim() || 'Untitled', body.trim(), note.id);
     }
-    setShowReminder(false);
   }
 
   async function handleClearReminder() {
+    setShowReminder(false);
     await cancelReminder(notifId);
     setReminderTime(null);
     setNotifId(null);
-    setShowReminder(false);
   }
 
   return (
@@ -252,16 +272,16 @@ function TodoEditor({ todo, onSave, onCancel }) {
   }
 
   async function handleSetReminder(ts) {
+    setShowReminder(false);
     await cancelReminder(notifId);
     const id = await scheduleReminder(title.trim() || 'Todo reminder', '', ts);
     if (id) { setReminderTime(ts); setNotifId(id); }
-    setShowReminder(false);
   }
 
   async function handleClearReminder() {
+    setShowReminder(false);
     await cancelReminder(notifId);
     setReminderTime(null); setNotifId(null);
-    setShowReminder(false);
   }
 
   return (
@@ -575,7 +595,7 @@ const td = StyleSheet.create({
 
 const rm = StyleSheet.create({
   overlay: { flex: 1, justifyContent: 'flex-end', backgroundColor: 'rgba(0,0,0,0.6)' },
-  sheet: { backgroundColor: '#1a1a2e', borderTopLeftRadius: 20, borderTopRightRadius: 20, padding: 20, paddingBottom: 40 },
+  sheet: { backgroundColor: '#1a1a2e', borderTopLeftRadius: 20, borderTopRightRadius: 20, padding: 20, paddingBottom: 40, maxHeight: '85%' },
   header: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 16 },
   title: { fontSize: 18, fontWeight: '700', color: '#fff' },
   close: { fontSize: 18, color: '#888' },
@@ -592,6 +612,7 @@ const rm = StyleSheet.create({
   dayBtnText: { color: '#888', fontSize: 13 },
   dayBtnTextActive: { color: '#e94560' },
   timeRow: { flexDirection: 'row', alignItems: 'center', gap: 8 },
+  errorText: { color: '#e94560', fontSize: 13, marginTop: 8 },
   timeInput: { backgroundColor: '#1e1e35', borderRadius: 10, paddingVertical: 12, paddingHorizontal: 16, fontSize: 22, fontWeight: '700', color: '#fff', textAlign: 'center', width: 70 },
   timeSep: { fontSize: 24, color: '#fff', fontWeight: '700' },
   setBtn: { flex: 1, backgroundColor: '#e94560', borderRadius: 10, paddingVertical: 14, alignItems: 'center' },
