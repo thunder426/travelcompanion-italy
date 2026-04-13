@@ -79,3 +79,21 @@ export const describeStreet = (base64Image) =>
     'If you cannot identify a specific landmark, describe the architectural style and likely time period.',
     base64Image
   );
+
+const LANGUAGE_NAMES = {
+  en: 'English',
+  it: 'Italian',
+  zh: 'Chinese (Simplified)',
+};
+
+export const translateText = (text, fromLang, toLang) => {
+  const from = LANGUAGE_NAMES[fromLang] ?? fromLang;
+  const to = LANGUAGE_NAMES[toLang] ?? toLang;
+  return askClaude(
+    `You are a professional translator specialising in travel contexts. ` +
+    `Translate the following ${from} text into ${to}. ` +
+    `Return ONLY the translation — no explanation, no original text, no quotes. ` +
+    `Preserve tone and intent. If the text contains a proper name or place, keep it as-is.\n\n` +
+    `Text to translate:\n${text}`
+  );
+};
