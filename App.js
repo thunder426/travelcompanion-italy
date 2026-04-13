@@ -1,5 +1,15 @@
 import React from 'react';
 import { NavigationContainer } from '@react-navigation/native';
+import * as Notifications from 'expo-notifications';
+
+// Show notifications when app is in foreground
+Notifications.setNotificationHandler({
+  handleNotification: async () => ({
+    shouldShowAlert: true,
+    shouldPlaySound: true,
+    shouldSetBadge: false,
+  }),
+});
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { StatusBar } from 'expo-status-bar';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
