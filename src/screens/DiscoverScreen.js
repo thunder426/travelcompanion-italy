@@ -9,6 +9,14 @@ import * as Speech from 'expo-speech';
 import { describeArtwork, describeStreet } from '../services/claudeApi';
 import { setCurrentDestination, getCurrentDestination } from '../services/destinationContext';
 import DESTINATIONS from '../data/destinations';
+import IMAGES from '../assets/imageMap';
+
+// Returns a static local require() when the key exists, falls back to {uri}
+function imgSource(imageKey, url) {
+  if (imageKey && IMAGES[imageKey]) return IMAGES[imageKey];
+  if (url) return { uri: url };
+  return null;
+}
 
 const DEPTH_OPTIONS = [
   { key: 'quick',    label: 'Quick',     icon: '⚡' },
@@ -31,9 +39,9 @@ function SiteDetailView({ site, onBack }) {
     <View style={styles.flex}>
       <ScrollView style={styles.flex} contentContainerStyle={{ paddingBottom: 50 }}>
         {/* Hero image */}
-        {site.image && !imgFailed ? (
+        {imgSource(site.imageKey, site.image) && !imgFailed ? (
           <Image
-            source={{ uri: site.image }}
+            source={imgSource(site.imageKey, site.image)}
             style={sd.hero}
             resizeMode="cover"
             onError={() => setImgFailed(true)}
@@ -174,7 +182,7 @@ function DestinationDetail({ destination, isActive, onSetActive, onBack }) {
       )}
 
       {/* Section tabs */}
-      <ScrollView horizontal showsHorizontalScrollIndicator={false} style={dv.tabScroll}>
+      <ScrollView horizontal showsHorizontalScrollIndicator={false} style={dv.tabScroll} contentContainerStyle={{ paddingHorizontal: 12, paddingVertical: 6 }}>
         {SECTIONS.map(s => (
           <TouchableOpacity
             key={s.key}
@@ -193,9 +201,9 @@ function DestinationDetail({ destination, isActive, onSetActive, onBack }) {
           <>
             {/* Full-bleed hero with overlay tagline */}
             <View style={dv.heroWrapper}>
-              {destination.heroImage && !heroFailed ? (
+              {imgSource(destination.heroImageKey, destination.heroImage) && !heroFailed ? (
                 <Image
-                  source={{ uri: destination.heroImage }}
+                  source={imgSource(destination.heroImageKey, destination.heroImage)}
                   style={dv.heroFull}
                   resizeMode="cover"
                   onError={() => setHeroFailed(true)}
@@ -230,6 +238,7 @@ function DestinationDetail({ destination, isActive, onSetActive, onBack }) {
         {section === 'neighborhoods' && (
           <>
             <SectionBanner
+              imageKey={destination.neighborhoods.find(n => n.imageKey)?.imageKey || destination.heroImageKey}
               uri={destination.neighborhoods.find(n => n.image)?.image || destination.heroImage}
               icon="🗺️"
               label={`${destination.name} — Areas`}
@@ -237,7 +246,7 @@ function DestinationDetail({ destination, isActive, onSetActive, onBack }) {
             />
             {destination.neighborhoods.map((n, i) => (
               <View key={i} style={dv.areaCard}>
-                {n.image ? <NeighbourhoodImage uri={n.image} /> : null}
+                {(n.imageKey || n.image) ? <NeighbourhoodImage imageKey={n.imageKey} uri={n.image} /> : null}
                 <View style={dv.areaCardBody}>
                   <Text style={dv.cardTitle}>{n.name}</Text>
                   {n.bestFor && <Text style={dv.cardBestFor}>Best for: {n.bestFor}</Text>}
@@ -252,6 +261,7 @@ function DestinationDetail({ destination, isActive, onSetActive, onBack }) {
         {section === 'museums' && (
           <>
             <SectionBanner
+              imageKey={destination.heroImageKey}
               uri={destination.heroImage}
               icon="🏛️"
               label="Museums & Sites"
@@ -259,7 +269,7 @@ function DestinationDetail({ destination, isActive, onSetActive, onBack }) {
             />
             {destination.museums.map((m, i) => (
               <TouchableOpacity key={i} style={dv.siteCardV} onPress={() => setSelectedSite(m)} activeOpacity={0.85}>
-                <SiteCardImage uri={m.image} fallback="🏛️" />
+                <SiteCardImage imageKey={m.imageKey} uri={m.image} fallback="🏛️" />
                 <View style={dv.siteCardVBody}>
                   <Text style={dv.siteCardName}>{m.name}</Text>
                   <View style={dv.siteQuickRow}>
@@ -279,6 +289,7 @@ function DestinationDetail({ destination, isActive, onSetActive, onBack }) {
         {section === 'churches' && (
           <>
             <SectionBanner
+              imageKey={destination.churches.find(c => c.imageKey)?.imageKey || destination.heroImageKey}
               uri={destination.churches.find(c => c.image)?.image || destination.heroImage}
               icon="⛪"
               label="Churches & Basilicas"
@@ -286,7 +297,7 @@ function DestinationDetail({ destination, isActive, onSetActive, onBack }) {
             />
             {destination.churches.map((c, i) => (
               <TouchableOpacity key={i} style={dv.siteCardV} onPress={() => setSelectedSite(c)} activeOpacity={0.85}>
-                <SiteCardImage uri={c.image} fallback="⛪" />
+                <SiteCardImage imageKey={c.imageKey} uri={c.image} fallback="⛪" />
                 <View style={dv.siteCardVBody}>
                   <Text style={dv.siteCardName}>{c.name}</Text>
                   <View style={dv.siteQuickRow}>
@@ -305,6 +316,7 @@ function DestinationDetail({ destination, isActive, onSetActive, onBack }) {
         {section === 'food' && (
           <>
             <SectionBanner
+              imageKey={destination.heroImageKey}
               uri={destination.heroImage}
               icon="🍝"
               label={`Eat in ${destination.name}`}
@@ -328,12 +340,13 @@ function DestinationDetail({ destination, isActive, onSetActive, onBack }) {
 }
 
 // Full-bleed neighbourhood banner image
-function NeighbourhoodImage({ uri }) {
+function NeighbourhoodImage({ imageKey, uri }) {
   const [failed, setFailed] = useState(false);
-  if (failed) return null;
+  const src = imgSource(imageKey, uri);
+  if (!src || failed) return null;
   return (
     <Image
-      source={{ uri }}
+      source={src}
       style={dv.neighbourhoodImg}
       resizeMode="cover"
       onError={() => setFailed(true)}
@@ -342,12 +355,13 @@ function NeighbourhoodImage({ uri }) {
 }
 
 // Full-width photo for vertical museum/church cards
-function SiteCardImage({ uri, fallback = '🏛️' }) {
+function SiteCardImage({ imageKey, uri, fallback = '🏛️' }) {
   const [failed, setFailed] = useState(false);
-  if (uri && !failed) {
+  const src = imgSource(imageKey, uri);
+  if (src && !failed) {
     return (
       <Image
-        source={{ uri }}
+        source={src}
         style={dv.siteCardImg}
         resizeMode="cover"
         onError={() => setFailed(true)}
@@ -362,13 +376,14 @@ function SiteCardImage({ uri, fallback = '🏛️' }) {
 }
 
 // Section-level banner that bleeds edge-to-edge above a tab's content
-function SectionBanner({ uri, icon, label, sub }) {
+function SectionBanner({ imageKey, uri, icon, label, sub }) {
   const [failed, setFailed] = useState(false);
+  const src = imgSource(imageKey, uri);
   return (
     <View style={dv.tabBanner}>
-      {uri && !failed ? (
+      {src && !failed ? (
         <Image
-          source={{ uri }}
+          source={src}
           style={dv.tabBannerImg}
           resizeMode="cover"
           onError={() => setFailed(true)}
@@ -445,9 +460,9 @@ function DestinationCard({ item, isActive, onPress }) {
       onPress={onPress}
       activeOpacity={0.8}
     >
-      {item.heroImage && !imgFailed ? (
+      {imgSource(item.heroImageKey, item.heroImage) && !imgFailed ? (
         <Image
-          source={{ uri: item.heroImage }}
+          source={imgSource(item.heroImageKey, item.heroImage)}
           style={dv.destHeroImg}
           resizeMode="cover"
           onError={() => setImgFailed(true)}
@@ -673,10 +688,10 @@ const dv = StyleSheet.create({
   setBtnTextActive: { color: '#e94560' },
   activeBanner: { backgroundColor: '#2a1020', borderRadius: 10, padding: 10, marginBottom: 10, borderWidth: 1, borderColor: '#e94560' },
   activeBannerText: { color: '#e94560', fontSize: 13, textAlign: 'center' },
-  tabScroll: { marginBottom: 4 },
-  tab: { paddingVertical: 8, paddingHorizontal: 14, marginRight: 6, borderRadius: 20, borderWidth: 1, borderColor: '#333', backgroundColor: '#1a1a2e' },
+  tabScroll: { flexGrow: 0, marginBottom: 2 },
+  tab: { paddingVertical: 4, paddingHorizontal: 12, marginRight: 6, borderRadius: 14, borderWidth: 1, borderColor: '#333', backgroundColor: '#1a1a2e' },
   tabActive: { borderColor: '#e94560', backgroundColor: '#2a1020' },
-  tabText: { color: '#888', fontSize: 13, fontWeight: '600' },
+  tabText: { color: '#888', fontSize: 12, fontWeight: '600' },
   tabTextActive: { color: '#e94560' },
 
   // ── Overview hero (full-bleed, negative margin to escape the ScrollView padding) ──
