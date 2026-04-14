@@ -6,7 +6,7 @@ import {
 } from 'react-native';
 import { CameraView, useCameraPermissions } from 'expo-camera';
 import * as Speech from 'expo-speech';
-import { describeArtwork, describeStreet } from '../services/claudeApi';
+import { describeScene } from '../services/claudeApi';
 import { setCurrentDestination, getCurrentDestination } from '../services/destinationContext';
 import DESTINATIONS from '../data/destinations';
 import IMAGES from '../assets/imageMap';
@@ -504,9 +504,7 @@ export default function DiscoverScreen() {
       setLoading(true);
       const photo = await cameraRef.current.takePictureAsync({ base64: true, quality: 0.7 });
       setCameraActive(false);
-      const text = mode === 'museum'
-        ? await describeArtwork(photo.base64, depth)
-        : await describeStreet(photo.base64);
+      const text = await describeScene(photo.base64, depth);
       setResult(text);
     } catch (err) {
       Alert.alert('Error', err.message || 'Something went wrong.');
@@ -566,9 +564,9 @@ export default function DiscoverScreen() {
 
       {mode === 'guide' && <GuideView />}
 
-      {(mode === 'museum' || mode === 'street') && (
+      {mode === 'lens' && (
         <>
-          {mode === 'museum' && !result && (
+          {!result && (
             <View style={styles.depthRow}>
               {DEPTH_OPTIONS.map(opt => (
                 <TouchableOpacity
@@ -586,13 +584,11 @@ export default function DiscoverScreen() {
           {loading ? (
             <View style={styles.centered}>
               <ActivityIndicator size="large" color="#e94560" />
-              <Text style={styles.loadingText}>
-                {mode === 'museum' ? 'Analysing artwork…' : 'Identifying landmark…'}
-              </Text>
+              <Text style={styles.loadingText}>Identifying…</Text>
             </View>
           ) : result ? (
             <ScrollView style={styles.flex} contentContainerStyle={{ padding: 16 }}>
-              <Text style={styles.resultLabel}>{mode === 'museum' ? 'Guide' : 'Discovery'}</Text>
+              <Text style={styles.resultLabel}>Discovery</Text>
               <Text style={styles.resultText}>{result}</Text>
               <View style={styles.actionRow}>
                 <TouchableOpacity style={styles.listenBtn} onPress={toggleSpeech}>
@@ -606,12 +602,10 @@ export default function DiscoverScreen() {
           ) : (
             <View style={styles.centered}>
               <Text style={styles.hint}>
-                {mode === 'museum'
-                  ? 'Photograph an artwork or exhibit for an AI-narrated explanation.'
-                  : 'Point at any building or landmark to discover its history.'}
+                Point at any artwork, landmark, building, or sight for an AI-narrated explanation.
               </Text>
               <TouchableOpacity style={styles.actionBtn} onPress={() => setCameraActive(true)}>
-                <Text style={styles.camIcon}>{mode === 'museum' ? '🏛️' : '🔍'}</Text>
+                <Text style={styles.camIcon}>📷</Text>
                 <Text style={styles.actionBtnText}>Open Camera</Text>
               </TouchableOpacity>
             </View>
@@ -626,9 +620,8 @@ function ModeToggle({ mode, setMode, setResult }) {
   return (
     <View style={styles.modeToggle}>
       {[
-        { key: 'guide',  label: '🗺️  Guide'    },
-        { key: 'museum', label: '🏛️  Museum'   },
-        { key: 'street', label: '🔍  Explorer' },
+        { key: 'guide', label: '🗺️  Guide' },
+        { key: 'lens',  label: '📷  Lens'  },
       ].map(({ key, label }) => (
         <TouchableOpacity
           key={key}

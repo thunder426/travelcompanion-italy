@@ -17,7 +17,8 @@
         "NSCameraUsageDescription": "Used to translate text and identify artworks",
 "NSLocationAlwaysAndWhenInUseUsageDescription": "Used to warn you of ZTL zones while driving",
         "NSLocationWhenInUseUsageDescription": "Used to show your position on the map",
-        "ITSAppUsesNonExemptEncryption": false
+        "ITSAppUsesNonExemptEncryption": false,
+        "NSMotionUsageDescription": "Used to count your daily steps while exploring Italy"
       },
       "bundleIdentifier": "com.thunderexpo.travelcompanion"
     },

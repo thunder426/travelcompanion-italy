@@ -94,28 +94,97 @@ export default function ExpenseScreen() {
   const amountValid = parseFloat(amount) > 0;
   const total       = expenses.reduce((s, e) => s + e.amount, 0);
   const grouped     = groupByDate(expenses);
+  const dayCount    = grouped.length;
+  const dailyAvg    = dayCount > 0 ? total / dayCount : 0;
+
+  // Category totals, sorted by spend descending.
+  const catTotals = CATEGORIES.map((c) => {
+    const sum = expenses.reduce(
+      (s, e) => (e.category === c.key ? s + e.amount : s),
+      0
+    );
+    return { ...c, total: sum, pct: total > 0 ? sum / total : 0 };
+  })
+    .filter((c) => c.total > 0)
+    .sort((a, b) => b.total - a.total);
+
+  const CAT_COLORS = {
+    Food: '#f97316',
+    Transport: '#3b82f6',
+    Museums: '#a855f7',
+    Hotel: '#10b981',
+    Shopping: '#ec4899',
+    Other: '#64748b',
+  };
 
   return (
     <View style={[s.container, { paddingBottom: insets.bottom }]}>
-      {/* Trip total */}
-      <View style={s.totalCard}>
-        <Text style={s.totalLabel}>Total Spent</Text>
-        <Text style={s.totalAmount}>€{total.toFixed(2)}</Text>
-        {expenses.length > 0 && (
-          <Text style={s.totalSub}>{expenses.length} expense{expenses.length !== 1 ? 's' : ''}</Text>
-        )}
-      </View>
-
       {grouped.length === 0 ? (
-        <View style={s.empty}>
-          <Text style={s.emptyIcon}>💶</Text>
-          <Text style={s.emptyText}>No expenses yet{'\n'}Tap + to log one</Text>
-        </View>
+        <>
+          <View style={s.totalCard}>
+            <Text style={s.totalLabel}>Total Spent</Text>
+            <Text style={s.totalAmount}>€{total.toFixed(2)}</Text>
+          </View>
+          <View style={s.empty}>
+            <Text style={s.emptyIcon}>💶</Text>
+            <Text style={s.emptyText}>No expenses yet{'\n'}Tap + to log one</Text>
+          </View>
+        </>
       ) : (
         <FlatList
           data={grouped}
           keyExtractor={g => g.date}
           contentContainerStyle={{ paddingBottom: 100 }}
+          ListHeaderComponent={
+            <View style={s.summary}>
+              <View style={s.summaryTop}>
+                <View style={s.summaryCell}>
+                  <Text style={s.summaryLabel}>Total</Text>
+                  <Text style={s.summaryValue}>€{total.toFixed(2)}</Text>
+                </View>
+                <View style={s.summaryDivider} />
+                <View style={s.summaryCell}>
+                  <Text style={s.summaryLabel}>Daily avg</Text>
+                  <Text style={s.summaryValue}>€{dailyAvg.toFixed(2)}</Text>
+                  <Text style={s.summarySub}>
+                    over {dayCount} day{dayCount !== 1 ? 's' : ''}
+                  </Text>
+                </View>
+              </View>
+
+              {catTotals.length > 0 && (
+                <>
+                  <View style={s.bar}>
+                    {catTotals.map((c) => (
+                      <View
+                        key={c.key}
+                        style={{
+                          flex: c.pct,
+                          backgroundColor: CAT_COLORS[c.key] || '#64748b',
+                        }}
+                      />
+                    ))}
+                  </View>
+                  <View style={s.catLegend}>
+                    {catTotals.map((c) => (
+                      <View key={c.key} style={s.catLegendRow}>
+                        <View
+                          style={[
+                            s.catDot,
+                            { backgroundColor: CAT_COLORS[c.key] || '#64748b' },
+                          ]}
+                        />
+                        <Text style={s.catLegendIcon}>{c.icon}</Text>
+                        <Text style={s.catLegendKey}>{c.key}</Text>
+                        <Text style={s.catLegendPct}>{Math.round(c.pct * 100)}%</Text>
+                        <Text style={s.catLegendAmt}>€{c.total.toFixed(2)}</Text>
+                      </View>
+                    ))}
+                  </View>
+                </>
+              )}
+            </View>
+          }
           renderItem={({ item: group }) => {
             const dayTotal = group.items.reduce((s, e) => s + e.amount, 0);
             return (
@@ -241,6 +310,32 @@ const s = StyleSheet.create({
   totalLabel:  { fontSize: 13, color: '#888', fontWeight: '600', textTransform: 'uppercase', letterSpacing: 1 },
   totalAmount: { fontSize: 42, fontWeight: '800', color: '#e94560', marginTop: 4 },
   totalSub:    { fontSize: 13, color: '#555', marginTop: 4 },
+
+  summary: {
+    backgroundColor: '#1a1a2e', margin: 16, borderRadius: 16,
+    padding: 16, borderWidth: 1, borderColor: '#2a2a50',
+  },
+  summaryTop: { flexDirection: 'row', alignItems: 'center' },
+  summaryCell: { flex: 1, alignItems: 'center' },
+  summaryDivider: { width: 1, height: 40, backgroundColor: '#2a2a50' },
+  summaryLabel: {
+    fontSize: 11, color: '#888', fontWeight: '700',
+    textTransform: 'uppercase', letterSpacing: 1,
+  },
+  summaryValue: { fontSize: 26, fontWeight: '800', color: '#e94560', marginTop: 4 },
+  summarySub: { fontSize: 11, color: '#555', marginTop: 2 },
+
+  bar: {
+    flexDirection: 'row', height: 8, borderRadius: 4,
+    overflow: 'hidden', marginTop: 16, backgroundColor: '#0f0f1a',
+  },
+  catLegend: { marginTop: 10, gap: 6 },
+  catLegendRow: { flexDirection: 'row', alignItems: 'center', gap: 8 },
+  catDot: { width: 8, height: 8, borderRadius: 4 },
+  catLegendIcon: { fontSize: 14 },
+  catLegendKey: { flex: 1, color: '#ccc', fontSize: 13, fontWeight: '600' },
+  catLegendPct: { color: '#888', fontSize: 12, fontWeight: '700', minWidth: 36, textAlign: 'right' },
+  catLegendAmt: { color: '#fff', fontSize: 13, fontWeight: '700', minWidth: 72, textAlign: 'right' },
 
   dayHeader: {
     flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center',

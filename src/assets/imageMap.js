@@ -38,6 +38,17 @@ const IMAGES = {
   val_dorcia:        require('./images/val_dorcia.png'),
   siena_campo:       require('./images/siena_campo.png'),
   siena_duomo:       require('./images/siena_duomo.png'),
+  baptistery:        require('./images/baptistery.png'),
+  san_miniato:       require('./images/san_miniato.png'),
+  san_gimignano:     require('./images/san_gimignano.png'),
+  chianti_classico:  require('./images/chianti_classico.png'),
+  lucca:             require('./images/lucca.png'),
+  cortona:           require('./images/cortona.png'),
+  collegiata:        require('./images/collegiata.png'),
+  maec:              require('./images/maec.png'),
+  museo_civico:      require('./images/museo_civico.png'),
+  pienza_cathedral:  require('./images/pienza_cathedral.png'),
+  sant_antimo:       require('./images/sant_antimo.png'),
 };
 
 export default IMAGES;

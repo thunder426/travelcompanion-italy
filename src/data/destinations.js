@@ -448,6 +448,7 @@ const DESTINATIONS = [
       },
       {
         name: 'Baptistery of San Giovanni',
+        imageKey: 'baptistery',
         hours: 'Mon–Fri 8:15–10:15, 11:15–19:30 · Sat–Sun 8:15–19:30',
         price: 'Included in Duomo complex ticket (€18)',
         highlights: [
@@ -476,6 +477,7 @@ const DESTINATIONS = [
       },
       {
         name: 'San Miniato al Monte',
+        imageKey: 'san_miniato',
         hours: 'Daily 9:30–13:00, 14:30–19:00 (winter closes 18:00)',
         price: 'Free',
         highlights: [
@@ -533,28 +535,31 @@ const DESTINATIONS = [
       },
       {
         name: 'San Gimignano',
-        image: 'https://upload.wikimedia.org/wikipedia/commons/0/0a/Siena5.jpg',
-        imageKey: 'siena_campo',
+        imageKey: 'san_gimignano',
         description: 'The "medieval Manhattan" — 14 towers survive from the original 72 built by competing noble families. Touristy but genuinely impressive. Visit early morning or evening.',
         bestFor: 'Tower views, vernaccia wine, early morning atmosphere',
       },
       {
         name: 'Chianti Classico',
+        imageKey: 'chianti_classico',
         description: 'The wine country between Florence and Siena. Classic road trip through vineyards and hilltop villages. Key villages: Greve in Chianti, Castellina, Radda.',
         bestFor: 'Wine tasting, cycling, scenic driving',
       },
       {
         name: 'Val d\'Orcia',
+        imageKey: 'val_dorcia',
         description: 'UNESCO-listed landscape of rolling clay hills, cypress-lined roads and medieval towns. Pienza (ideal Renaissance town), Montepulciano, Montalcino.',
         bestFor: 'The quintessential Tuscan landscape, wine, photography',
       },
       {
         name: 'Lucca',
+        imageKey: 'lucca',
         description: 'Perfectly preserved Renaissance walls surrounding a lively city centre. Walk or cycle the entire 4km circuit of walls on top. Less touristy than Siena.',
         bestFor: 'Cycling the walls, church-hopping, local atmosphere',
       },
       {
         name: 'Cortona',
+        imageKey: 'cortona',
         description: 'Steep hilltop town with Etruscan and medieval layers. MAEC museum has excellent Etruscan collection. Great views over the Val di Chiana.',
         bestFor: 'Etruscan history, hilltop views, quiet tourism',
       },
@@ -604,8 +609,7 @@ const DESTINATIONS = [
       },
       {
         name: 'MAEC — Museo dell\'Accademia Etrusca (Cortona)',
-        image: 'https://upload.wikimedia.org/wikipedia/commons/b/b3/I_cipressi_della_Val_D%27Orcia.jpg',
-        imageKey: 'val_dorcia',
+        imageKey: 'maec',
         address: 'Piazza Signorelli 9, 52044 Cortona',
         mapQuery: 'MAEC Museum Cortona Italy',
         hours: 'Tue–Sun 10:00–19:00 (Nov–Mar closes 17:00). Closed Monday.',
@@ -624,8 +628,7 @@ const DESTINATIONS = [
       },
       {
         name: 'Museo Civico & Pinacoteca Nazionale (Siena)',
-        image: 'https://upload.wikimedia.org/wikipedia/commons/7/7c/Duomo_di_Siena-9635.jpg',
-        imageKey: 'siena_duomo',
+        imageKey: 'museo_civico',
         address: 'Via San Pietro 29, 53100 Siena',
         mapQuery: 'Pinacoteca Nazionale Siena Italy',
         hours: 'Mon 8:30–13:30 · Tue–Sat 8:15–19:15 · Sun 9:00–13:00',
@@ -646,6 +649,7 @@ const DESTINATIONS = [
     churches: [
       {
         name: 'Siena Cathedral (Duomo)',
+        imageKey: 'siena_duomo',
         hours: 'See museum complex entry above',
         price: 'See museum complex entry above',
         highlights: [
@@ -658,6 +662,7 @@ const DESTINATIONS = [
       },
       {
         name: 'Collegiata di San Gimignano',
+        imageKey: 'collegiata',
         hours: 'Apr–Oct Mon–Fri 10:00–19:30, Sat 10:00–17:30, Sun 12:30–19:30. Nov–Mar shorter hours.',
         price: '€4',
         highlights: [
@@ -670,6 +675,7 @@ const DESTINATIONS = [
       },
       {
         name: 'Sant\'Antimo (near Montalcino)',
+        imageKey: 'sant_antimo',
         hours: 'Mon–Sat 9:15–12:45, 14:45–18:30 · Sun 9:15–10:45 (mass), 15:00–18:00',
         price: 'Free',
         highlights: [
@@ -682,6 +688,7 @@ const DESTINATIONS = [
       },
       {
         name: 'Pienza Cathedral',
+        imageKey: 'pienza_cathedral',
         hours: 'Daily 7:30–13:00, 14:30–19:00',
         price: 'Free',
         highlights: [

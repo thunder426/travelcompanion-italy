@@ -53,3 +53,18 @@ Expo React Native app (SDK 54) for Italy travel assistance. Five bottom tabs, ea
 **Navigation** uses React Navigation v6 bottom tabs. The tab navigator is configured in [App.js](App.js) with a dark theme (`#1a1a2e` background, `#e94560` active tint).
 
 **Notifications** (reminders in Notes) use `expo-notifications`. Permissions must be granted at runtime; the app requests them when the user first sets a reminder.
+
+## Pending: Background Location Tracking
+
+Both the ZTL warning (MapScreen) and activity tracking (ActivityScreen) currently use `Location.watchPositionAsync`, which is **foreground-only** to stay Expo Go compatible. This means:
+- ZTL warnings only fire when the app is foregrounded AND the Map tab has been visited at least once
+- Activity tracker's GPS path has gaps whenever the app is backgrounded (steps on iOS still come through HealthKit)
+
+When ready to do a dev build, unify both into a single background location task:
+1. Install `expo-task-manager`
+2. Add `UIBackgroundModes: ["location"]` to `app.json` iOS config
+3. Use `Location.startLocationUpdatesAsync` with a registered `TaskManager.defineTask`
+4. In the task handler, route each location update to both handlers: ZTL zone check (fire local notification on entry) + activity tracker path append
+5. Switch from Expo Go to a dev build (`eas build --profile development`)
+
+This is more efficient than running two separate GPS subscriptions and enables real-time ZTL warnings even when the app is in the background.

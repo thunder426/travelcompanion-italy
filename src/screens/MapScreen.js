@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
 import {
   View, Text, StyleSheet, ActivityIndicator,
-  TouchableOpacity, ScrollView, Modal, Linking,
+  TouchableOpacity, TouchableWithoutFeedback, ScrollView, Modal, Linking,
 } from 'react-native';
 import MapView, { Polygon, Polyline, Marker, Callout } from 'react-native-maps';
 import * as Location from 'expo-location';
@@ -119,31 +119,35 @@ function StopModal({ stop, onClose }) {
   if (!stop) return null;
   return (
     <Modal visible animationType="slide" transparent onRequestClose={onClose}>
-      <View style={sm.overlay}>
-        <View style={sm.sheet}>
-          <View style={sm.header}>
-            <View style={sm.badgeRow}>
-              {(stop.lines || [{ line: stop.line, color: stop.color }]).map(({ line, color }, i) => (
-                <View key={i} style={[sm.lineBadge, { backgroundColor: color }]}>
-                  <Text style={sm.lineBadgeText}>{line}</Text>
+      <TouchableWithoutFeedback onPress={onClose}>
+        <View style={sm.overlay}>
+          <TouchableWithoutFeedback>
+            <View style={sm.sheet}>
+              <View style={sm.header}>
+                <View style={sm.badgeRow}>
+                  {(stop.lines || [{ line: stop.line, color: stop.color }]).map(({ line, color }, i) => (
+                    <View key={i} style={[sm.lineBadge, { backgroundColor: color }]}>
+                      <Text style={sm.lineBadgeText}>{line}</Text>
+                    </View>
+                  ))}
+                </View>
+                <Text style={sm.stopName}>{stop.name}</Text>
+                <TouchableOpacity onPress={onClose} hitSlop={12}>
+                  <Text style={sm.close}>✕</Text>
+                </TouchableOpacity>
+              </View>
+              {stop.note && <Text style={sm.note}>{stop.note}</Text>}
+              <Text style={sm.attractionsLabel}>Nearby attractions</Text>
+              {stop.attractions.map((a, i) => (
+                <View key={i} style={sm.attractionRow}>
+                  <Text style={sm.attractionDot}>•</Text>
+                  <Text style={sm.attractionText}>{a}</Text>
                 </View>
               ))}
             </View>
-            <Text style={sm.stopName}>{stop.name}</Text>
-            <TouchableOpacity onPress={onClose} hitSlop={12}>
-              <Text style={sm.close}>✕</Text>
-            </TouchableOpacity>
-          </View>
-          {stop.note && <Text style={sm.note}>{stop.note}</Text>}
-          <Text style={sm.attractionsLabel}>Nearby attractions</Text>
-          {stop.attractions.map((a, i) => (
-            <View key={i} style={sm.attractionRow}>
-              <Text style={sm.attractionDot}>•</Text>
-              <Text style={sm.attractionText}>{a}</Text>
-            </View>
-          ))}
+          </TouchableWithoutFeedback>
         </View>
-      </View>
+      </TouchableWithoutFeedback>
     </Modal>
   );
 }
@@ -160,32 +164,36 @@ function PlaceModal({ place, icon, onClose }) {
   if (!place) return null;
   return (
     <Modal visible animationType="slide" transparent onRequestClose={onClose}>
-      <View style={sm.overlay}>
-        <View style={sm.sheet}>
-          <View style={sm.header}>
-            <Text style={{ fontSize: 28 }}>{icon}</Text>
-            <Text style={sm.stopName}>{place.name}</Text>
-            <TouchableOpacity onPress={onClose} hitSlop={12}>
-              <Text style={sm.close}>✕</Text>
-            </TouchableOpacity>
-          </View>
-          {place.neighborhood && (
-            <View style={pm.neighborhoodBadge}>
-              <Text style={pm.neighborhoodText}>📍 {place.neighborhood}</Text>
-              {place.price && <Text style={pm.priceText}>{place.price}</Text>}
+      <TouchableWithoutFeedback onPress={onClose}>
+        <View style={sm.overlay}>
+          <TouchableWithoutFeedback>
+            <View style={sm.sheet}>
+              <View style={sm.header}>
+                <Text style={{ fontSize: 28 }}>{icon}</Text>
+                <Text style={sm.stopName}>{place.name}</Text>
+                <TouchableOpacity onPress={onClose} hitSlop={12}>
+                  <Text style={sm.close}>✕</Text>
+                </TouchableOpacity>
+              </View>
+              {place.neighborhood && (
+                <View style={pm.neighborhoodBadge}>
+                  <Text style={pm.neighborhoodText}>📍 {place.neighborhood}</Text>
+                  {place.price && <Text style={pm.priceText}>{place.price}</Text>}
+                </View>
+              )}
+              {place.description && (
+                <Text style={pm.description}>{place.description}</Text>
+              )}
+              {place.specialty && (
+                <View style={pm.specialtyBox}>
+                  <Text style={pm.specialtyLabel}>What to order</Text>
+                  <Text style={pm.specialtyText}>{place.specialty}</Text>
+                </View>
+              )}
             </View>
-          )}
-          {place.description && (
-            <Text style={pm.description}>{place.description}</Text>
-          )}
-          {place.specialty && (
-            <View style={pm.specialtyBox}>
-              <Text style={pm.specialtyLabel}>What to order</Text>
-              <Text style={pm.specialtyText}>{place.specialty}</Text>
-            </View>
-          )}
+          </TouchableWithoutFeedback>
         </View>
-      </View>
+      </TouchableWithoutFeedback>
     </Modal>
   );
 }
@@ -301,12 +309,16 @@ export default function MapScreen() {
           <Marker
             key={stop.id}
             coordinate={stop.coordinate}
+            anchor={{ x: 0.5, y: 0.5 }}
+            tracksViewChanges={false}
             onPress={() => setSelectedStop(stop)}
           >
-            {stop.isInterchange
-              ? <View style={mk.interchange} />
-              : <View style={[mk.dot, { backgroundColor: stop.color }]} />
-            }
+            <View style={mk.hitbox}>
+              {stop.isInterchange
+                ? <View style={mk.interchange} />
+                : <View style={[mk.dot, { backgroundColor: stop.color }]} />
+              }
+            </View>
           </Marker>
         ))}
 
@@ -577,6 +589,11 @@ const styles = StyleSheet.create({
 });
 
 const mk = StyleSheet.create({
+  hitbox: {
+    width: 36, height: 36,
+    alignItems: 'center', justifyContent: 'center',
+    backgroundColor: 'transparent',
+  },
   dot: {
     width: 10, height: 10, borderRadius: 5,
     borderWidth: 1.5, borderColor: '#fff',

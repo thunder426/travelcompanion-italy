@@ -15,29 +15,25 @@ import { StatusBar } from 'expo-status-bar';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 import { Text } from 'react-native';
 
-import TranslationScreen from './src/screens/TranslationScreen';
-import DiscoverScreen    from './src/screens/DiscoverScreen';
-import MapScreen         from './src/screens/MapScreen';
+import ExploreHomeScreen from './src/screens/ExploreHomeScreen';
+import MapHomeScreen     from './src/screens/MapHomeScreen';
+import ActivityScreen    from './src/screens/ActivityScreen';
 import EssentialsScreen  from './src/screens/EssentialsScreen';
-import NotesScreen       from './src/screens/NotesScreen';
-import ExpenseScreen     from './src/screens/ExpenseScreen';
-import RoutePlannerScreen from './src/screens/RoutePlannerScreen';
+import JournalScreen     from './src/screens/JournalScreen';
 
 const Tab = createBottomTabNavigator();
 
 const ICONS = {
-  Translate:  { default: '🌍' },
-  Discover:   { default: '🏛️' },
+  Explore:    { default: '🏛️' },
   Map:        { default: '🗺️' },
+  Activity:   { default: '👣' },
   Essentials: { default: '📖' },
-  Notes:      { default: '📝' },
-  Expenses:   { default: '💰' },
-  Routes:     { default: '🧭' },
+  Journal:    { default: '📝' },
 };
 
 function TabIcon({ name, focused }) {
   return (
-    <Text style={{ fontSize: 20, opacity: focused ? 1 : 0.45 }}>
+    <Text style={{ fontSize: 22, opacity: focused ? 1 : 0.45 }}>
       {ICONS[name].default}
     </Text>
   );
@@ -60,27 +56,27 @@ export default function App() {
           }}
         >
           <Tab.Screen
-            name="Translate"
-            component={TranslationScreen}
+            name="Explore"
+            component={ExploreHomeScreen}
             options={{
-              title: 'Translate',
-              tabBarIcon: ({ focused }) => <TabIcon name="Translate" focused={focused} />,
-            }}
-          />
-          <Tab.Screen
-            name="Discover"
-            component={DiscoverScreen}
-            options={{
-              title: 'Discover',
-              tabBarIcon: ({ focused }) => <TabIcon name="Discover" focused={focused} />,
+              title: 'Explore',
+              tabBarIcon: ({ focused }) => <TabIcon name="Explore" focused={focused} />,
             }}
           />
           <Tab.Screen
             name="Map"
-            component={MapScreen}
+            component={MapHomeScreen}
             options={{
-              title: 'ZTL Map',
+              title: 'Map',
               tabBarIcon: ({ focused }) => <TabIcon name="Map" focused={focused} />,
+            }}
+          />
+          <Tab.Screen
+            name="Activity"
+            component={ActivityScreen}
+            options={{
+              title: 'Activity',
+              tabBarIcon: ({ focused }) => <TabIcon name="Activity" focused={focused} />,
             }}
           />
           <Tab.Screen
@@ -92,27 +88,11 @@ export default function App() {
             }}
           />
           <Tab.Screen
-            name="Notes"
-            component={NotesScreen}
+            name="Journal"
+            component={JournalScreen}
             options={{
-              title: 'Notes',
-              tabBarIcon: ({ focused }) => <TabIcon name="Notes" focused={focused} />,
-            }}
-          />
-          <Tab.Screen
-            name="Routes"
-            component={RoutePlannerScreen}
-            options={{
-              title: 'Routes',
-              tabBarIcon: ({ focused }) => <TabIcon name="Routes" focused={focused} />,
-            }}
-          />
-          <Tab.Screen
-            name="Expenses"
-            component={ExpenseScreen}
-            options={{
-              title: 'Expenses',
-              tabBarIcon: ({ focused }) => <TabIcon name="Expenses" focused={focused} />,
+              title: 'Journal',
+              tabBarIcon: ({ focused }) => <TabIcon name="Journal" focused={focused} />,
             }}
           />
         </Tab.Navigator>
