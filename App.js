@@ -20,15 +20,19 @@ import DiscoverScreen    from './src/screens/DiscoverScreen';
 import MapScreen         from './src/screens/MapScreen';
 import EssentialsScreen  from './src/screens/EssentialsScreen';
 import NotesScreen       from './src/screens/NotesScreen';
+import ExpenseScreen     from './src/screens/ExpenseScreen';
+import RoutePlannerScreen from './src/screens/RoutePlannerScreen';
 
 const Tab = createBottomTabNavigator();
 
 const ICONS = {
-  Translate:  { default: '🌍', active: '🌍' },
-  Discover:   { default: '🏛️', active: '🏛️' },
-  Map:        { default: '🗺️', active: '🗺️' },
-  Essentials: { default: '📖', active: '📖' },
-  Notes:      { default: '📝', active: '📝' },
+  Translate:  { default: '🌍' },
+  Discover:   { default: '🏛️' },
+  Map:        { default: '🗺️' },
+  Essentials: { default: '📖' },
+  Notes:      { default: '📝' },
+  Expenses:   { default: '💰' },
+  Routes:     { default: '🧭' },
 };
 
 function TabIcon({ name, focused }) {
@@ -93,6 +97,22 @@ export default function App() {
             options={{
               title: 'Notes',
               tabBarIcon: ({ focused }) => <TabIcon name="Notes" focused={focused} />,
+            }}
+          />
+          <Tab.Screen
+            name="Routes"
+            component={RoutePlannerScreen}
+            options={{
+              title: 'Routes',
+              tabBarIcon: ({ focused }) => <TabIcon name="Routes" focused={focused} />,
+            }}
+          />
+          <Tab.Screen
+            name="Expenses"
+            component={ExpenseScreen}
+            options={{
+              title: 'Expenses',
+              tabBarIcon: ({ focused }) => <TabIcon name="Expenses" focused={focused} />,
             }}
           />
         </Tab.Navigator>

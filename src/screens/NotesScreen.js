@@ -1,8 +1,9 @@
 import React, { useState, useEffect, useCallback, useRef } from 'react';
 import {
   View, Text, TouchableOpacity, StyleSheet, FlatList, TextInput,
-  Alert, KeyboardAvoidingView, Platform, Modal, ScrollView,
+  Alert, KeyboardAvoidingView, Platform, Modal, ScrollView, Image,
 } from 'react-native';
+import * as ImagePicker from 'expo-image-picker';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import * as Notifications from 'expo-notifications';
 import {
@@ -34,24 +35,26 @@ async function requestNotifPermission() {
 }
 
 async function scheduleReminder(title, body, unixTs) {
-  const granted = await requestNotifPermission();
-  if (!granted) {
-    Alert.alert('Permission needed', 'Please allow notifications in Settings to use reminders.');
+  let granted = false;
+  try {
+    const { status } = await Notifications.requestPermissionsAsync();
+    granted = status === 'granted';
+  } catch {
+    // Native permissions module unavailable (Expo Go) — skip notification
     return null;
   }
-  const date = new Date(unixTs * 1000);
-  if (date <= new Date()) {
-    Alert.alert('Invalid time', 'Please choose a time in the future.');
+  if (!granted) {
+    Alert.alert('Permission needed', 'Please allow notifications in Settings to use reminders.');
     return null;
   }
   try {
     const id = await Notifications.scheduleNotificationAsync({
       content: { title: '✈️ Travel Reminder', body: title + (body ? `\n${body}` : ''), sound: true },
-      trigger: { type: Notifications.SchedulableTriggerInputTypes.DATE, date },
+      trigger: { type: Notifications.SchedulableTriggerInputTypes.DATE, date: new Date(unixTs * 1000) },
     });
     return id;
-  } catch (e) {
-    Alert.alert('Error', 'Could not schedule reminder: ' + e.message);
+  } catch {
+    // Scheduling unavailable (Expo Go) — reminder time is still saved in UI
     return null;
   }
 }
@@ -184,24 +187,44 @@ function NoteEditor({ note, onSave, onCancel }) {
   const [reminderTime, setReminderTime]   = useState(note?.reminder_time ?? null);
   const [notifId, setNotifId]             = useState(note?.notification_id ?? null);
   const [showReminder, setShowReminder]   = useState(false);
+  const [photoUri, setPhotoUri]           = useState(note?.photo_uri ?? null);
+
+  async function pickPhoto() {
+    Alert.alert('Add Photo', 'Choose a source', [
+      {
+        text: 'Camera', onPress: async () => {
+          const { status } = await ImagePicker.requestCameraPermissionsAsync();
+          if (status !== 'granted') { Alert.alert('Permission needed', 'Camera access is required.'); return; }
+          const result = await ImagePicker.launchCameraAsync({ quality: 0.7, allowsEditing: true });
+          if (!result.canceled) setPhotoUri(result.assets[0].uri);
+        },
+      },
+      {
+        text: 'Photo Library', onPress: async () => {
+          const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
+          if (status !== 'granted') { Alert.alert('Permission needed', 'Photo library access is required.'); return; }
+          const result = await ImagePicker.launchImageLibraryAsync({ quality: 0.7, allowsEditing: true });
+          if (!result.canceled) setPhotoUri(result.assets[0].uri);
+        },
+      },
+      { text: 'Cancel', style: 'cancel' },
+    ]);
+  }
 
   async function handleSave() {
     const t = title.trim() || 'Untitled';
     const b = body.trim();
-    saveNote(t, b, note?.id ?? null);
+    saveNote(t, b, note?.id ?? null, photoUri);
     onSave();
   }
 
   async function handleSetReminder(ts) {
     setShowReminder(false);
+    setReminderTime(ts); // always save — notification is best-effort
     await cancelReminder(notifId);
     const id = await scheduleReminder(title.trim() || 'Note reminder', body.trim(), ts);
-    if (id) {
-      setReminderTime(ts);
-      setNotifId(id);
-      // Update DB immediately if editing
-      if (note?.id) saveNote(title.trim() || 'Untitled', body.trim(), note.id);
-    }
+    setNotifId(id ?? null);
+    if (note?.id) saveNote(title.trim() || 'Untitled', body.trim(), note.id);
   }
 
   async function handleClearReminder() {
@@ -230,6 +253,21 @@ function NoteEditor({ note, onSave, onCancel }) {
         value={title} onChangeText={setTitle} maxLength={100} />
       <TextInput style={ed.bodyInput} placeholder="Write your note…" placeholderTextColor="#444"
         value={body} onChangeText={setBody} multiline textAlignVertical="top" autoFocus={!note} />
+
+      {/* Photo attachment */}
+      {photoUri ? (
+        <View style={ed.photoContainer}>
+          <Image source={{ uri: photoUri }} style={ed.photoPreview} resizeMode="cover" />
+          <TouchableOpacity style={ed.photoRemove} onPress={() => setPhotoUri(null)}>
+            <Text style={ed.photoRemoveText}>✕</Text>
+          </TouchableOpacity>
+        </View>
+      ) : (
+        <TouchableOpacity style={ed.photoBtn} onPress={pickPhoto}>
+          <Text style={ed.photoBtnText}>📷  Add Photo</Text>
+        </TouchableOpacity>
+      )}
+
       <ReminderModal
         visible={showReminder} current={reminderTime}
         onSet={handleSetReminder} onClear={handleClearReminder}
@@ -273,9 +311,10 @@ function TodoEditor({ todo, onSave, onCancel }) {
 
   async function handleSetReminder(ts) {
     setShowReminder(false);
+    setReminderTime(ts); // always save — notification is best-effort
     await cancelReminder(notifId);
     const id = await scheduleReminder(title.trim() || 'Todo reminder', '', ts);
-    if (id) { setReminderTime(ts); setNotifId(id); }
+    setNotifId(id ?? null);
   }
 
   async function handleClearReminder() {
@@ -489,6 +528,7 @@ export default function NotesScreen() {
                     </TouchableOpacity>
                   </View>
                   {item.body ? <Text style={ls.cardPreview} numberOfLines={2}>{item.body}</Text> : null}
+                  {item.photo_uri ? <Image source={{ uri: item.photo_uri }} style={ls.cardThumb} resizeMode="cover" /> : null}
                   <View style={ls.cardFooter}>
                     <Text style={ls.cardDate}>{formatDate(item.updated_at)}</Text>
                     {item.reminder_time && <Text style={ls.reminderBadge}>🔔 {formatReminderTime(item.reminder_time)}</Text>}
@@ -548,6 +588,7 @@ const ls = StyleSheet.create({
   cardFooter: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginTop: 4 },
   cardDate: { fontSize: 12, color: '#555' },
   reminderBadge: { fontSize: 12, color: '#e94560' },
+  cardThumb: { width: '100%', height: 120, borderRadius: 8, marginBottom: 6 },
   deleteBtn: { padding: 4, marginLeft: 8 },
   deleteIcon: { fontSize: 17 },
   progressRow: { flexDirection: 'row', alignItems: 'center', gap: 8, marginBottom: 8 },
@@ -574,6 +615,18 @@ const ed = StyleSheet.create({
   reminderActive: { color: '#e94560' },
   titleInput: { fontSize: 22, fontWeight: '700', color: '#fff', borderBottomWidth: 1, borderBottomColor: '#2a2a50', paddingBottom: 12, marginBottom: 16 },
   bodyInput: { flex: 1, fontSize: 16, color: '#fff', lineHeight: 26 },
+  photoBtn: {
+    marginTop: 12, borderWidth: 1, borderColor: '#2a2a50', borderRadius: 10, borderStyle: 'dashed',
+    paddingVertical: 12, alignItems: 'center',
+  },
+  photoBtnText:   { color: '#555', fontSize: 14 },
+  photoContainer: { marginTop: 12, position: 'relative', alignSelf: 'flex-start' },
+  photoPreview:   { width: '100%', height: 180, borderRadius: 10 },
+  photoRemove: {
+    position: 'absolute', top: 8, right: 8, backgroundColor: 'rgba(0,0,0,0.6)',
+    width: 28, height: 28, borderRadius: 14, alignItems: 'center', justifyContent: 'center',
+  },
+  photoRemoveText: { color: '#fff', fontSize: 14, fontWeight: '700' },
 });
 
 const td = StyleSheet.create({
