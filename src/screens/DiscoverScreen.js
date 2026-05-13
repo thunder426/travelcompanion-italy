@@ -487,10 +487,18 @@ function DestinationCard({ item, isActive, onPress }) {
   );
 }
 
-// ── Camera + Museum/Street Views ──────────────────────────────────────────────
-export default function DiscoverScreen() {
+// ── Guide screen (destination browser) ──────────────────────────────────────
+export function GuideScreen() {
+  return (
+    <View style={styles.container}>
+      <GuideView />
+    </View>
+  );
+}
+
+// ── Lens screen (artwork / landmark identification via camera) ──────────────
+export function LensScreen() {
   const [permission, requestPermission] = useCameraPermissions();
-  const [mode, setMode]         = useState('guide');
   const [cameraActive, setCameraActive] = useState(false);
   const [loading, setLoading]   = useState(false);
   const [result, setResult]     = useState(null);
@@ -527,10 +535,9 @@ export default function DiscoverScreen() {
     }
   }
 
-  if (!permission?.granted && mode !== 'guide') {
+  if (!permission?.granted) {
     return (
       <View style={styles.container}>
-        <ModeToggle mode={mode} setMode={setMode} setResult={setResult} />
         <View style={styles.centered}>
           <Text style={styles.permText}>Camera access is needed.</Text>
           <TouchableOpacity style={styles.actionBtn} onPress={requestPermission}>
@@ -560,63 +567,60 @@ export default function DiscoverScreen() {
 
   return (
     <View style={styles.container}>
-      <ModeToggle mode={mode} setMode={setMode} setResult={setResult} />
+      {!result && (
+        <View style={styles.depthRow}>
+          {DEPTH_OPTIONS.map(opt => (
+            <TouchableOpacity
+              key={opt.key}
+              style={[styles.depthBtn, depth === opt.key && styles.depthBtnActive]}
+              onPress={() => setDepth(opt.key)}
+            >
+              <Text style={styles.depthIcon}>{opt.icon}</Text>
+              <Text style={[styles.depthLabel, depth === opt.key && styles.depthLabelActive]}>{opt.label}</Text>
+            </TouchableOpacity>
+          ))}
+        </View>
+      )}
 
-      {mode === 'guide' && <GuideView />}
-
-      {mode === 'lens' && (
-        <>
-          {!result && (
-            <View style={styles.depthRow}>
-              {DEPTH_OPTIONS.map(opt => (
-                <TouchableOpacity
-                  key={opt.key}
-                  style={[styles.depthBtn, depth === opt.key && styles.depthBtnActive]}
-                  onPress={() => setDepth(opt.key)}
-                >
-                  <Text style={styles.depthIcon}>{opt.icon}</Text>
-                  <Text style={[styles.depthLabel, depth === opt.key && styles.depthLabelActive]}>{opt.label}</Text>
-                </TouchableOpacity>
-              ))}
-            </View>
-          )}
-
-          {loading ? (
-            <View style={styles.centered}>
-              <ActivityIndicator size="large" color="#e94560" />
-              <Text style={styles.loadingText}>Identifying…</Text>
-            </View>
-          ) : result ? (
-            <ScrollView style={styles.flex} contentContainerStyle={{ padding: 16 }}>
-              <Text style={styles.resultLabel}>Discovery</Text>
-              <Text style={styles.resultText}>{result}</Text>
-              <View style={styles.actionRow}>
-                <TouchableOpacity style={styles.listenBtn} onPress={toggleSpeech}>
-                  <Text style={styles.actionBtnText}>{speaking ? '⏹  Stop' : '🔊  Listen'}</Text>
-                </TouchableOpacity>
-                <TouchableOpacity style={styles.actionBtn} onPress={() => { setResult(null); setCameraActive(true); }}>
-                  <Text style={styles.actionBtnText}>New Photo</Text>
-                </TouchableOpacity>
-              </View>
-            </ScrollView>
-          ) : (
-            <View style={styles.centered}>
-              <Text style={styles.hint}>
-                Point at any artwork, landmark, building, or sight for an AI-narrated explanation.
-              </Text>
-              <TouchableOpacity style={styles.actionBtn} onPress={() => setCameraActive(true)}>
-                <Text style={styles.camIcon}>📷</Text>
-                <Text style={styles.actionBtnText}>Open Camera</Text>
-              </TouchableOpacity>
-            </View>
-          )}
-        </>
+      {loading ? (
+        <View style={styles.centered}>
+          <ActivityIndicator size="large" color="#e94560" />
+          <Text style={styles.loadingText}>Identifying…</Text>
+        </View>
+      ) : result ? (
+        <ScrollView style={styles.flex} contentContainerStyle={{ padding: 16 }}>
+          <Text style={styles.resultLabel}>Discovery</Text>
+          <Text style={styles.resultText}>{result}</Text>
+          <View style={styles.actionRow}>
+            <TouchableOpacity style={styles.listenBtn} onPress={toggleSpeech}>
+              <Text style={styles.actionBtnText}>{speaking ? '⏹  Stop' : '🔊  Listen'}</Text>
+            </TouchableOpacity>
+            <TouchableOpacity style={styles.actionBtn} onPress={() => { setResult(null); setCameraActive(true); }}>
+              <Text style={styles.actionBtnText}>New Photo</Text>
+            </TouchableOpacity>
+          </View>
+        </ScrollView>
+      ) : (
+        <View style={styles.centered}>
+          <Text style={styles.hint}>
+            Point at any artwork, landmark, building, or sight for an AI-narrated explanation.
+          </Text>
+          <TouchableOpacity style={styles.actionBtn} onPress={() => setCameraActive(true)}>
+            <Text style={styles.camIcon}>📷</Text>
+            <Text style={styles.actionBtnText}>Open Camera</Text>
+          </TouchableOpacity>
+        </View>
       )}
     </View>
   );
 }
 
-function ModeToggle({ mode, setMode, setResult }) {
+// Legacy default export — returns Guide for any stale import.
+export default GuideScreen;
+
+// (Kept for reference; no longer rendered.)
+// eslint-disable-next-line no-unused-vars
+function _UnusedModeToggle({ mode, setMode, setResult }) {
   return (
     <View style={styles.modeToggle}>
       {[

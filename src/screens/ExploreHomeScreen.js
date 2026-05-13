@@ -1,15 +1,16 @@
 import React, { useState } from 'react';
 import { View, Text, TouchableOpacity, StyleSheet } from 'react-native';
-import DiscoverScreen from './DiscoverScreen';
+import { GuideScreen, LensScreen } from './DiscoverScreen';
 import TranslationScreen from './TranslationScreen';
 
 const TABS = [
-  { key: 'discover', label: 'Discover' },
+  { key: 'guide',     label: 'Guide' },
+  { key: 'lens',      label: 'Lens' },
   { key: 'translate', label: 'Translate' },
 ];
 
 export default function ExploreHomeScreen() {
-  const [tab, setTab] = useState('discover');
+  const [tab, setTab] = useState('guide');
 
   return (
     <View style={s.container}>
@@ -27,10 +28,13 @@ export default function ExploreHomeScreen() {
           </TouchableOpacity>
         ))}
       </View>
-      {/* Keep both mounted so state (e.g. an in-progress menu translation)
-          survives sub-tab switching. Only toggle visibility. */}
-      <View style={[s.screen, tab !== 'discover' && s.hidden]}>
-        <DiscoverScreen />
+      {/* Keep all sub-screens mounted so state (e.g. an in-progress
+          translation or lens result) survives sub-tab switching. */}
+      <View style={[s.screen, tab !== 'guide' && s.hidden]}>
+        <GuideScreen />
+      </View>
+      <View style={[s.screen, tab !== 'lens' && s.hidden]}>
+        <LensScreen />
       </View>
       <View style={[s.screen, tab !== 'translate' && s.hidden]}>
         <TranslationScreen />

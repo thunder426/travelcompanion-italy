@@ -1,0 +1,186 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Travel Companion — Task Tracker</title>
+<style>
+  :root {
+    --bg: #1a1a1f; --panel: #23232a; --border: #33333d; --text: #e6e6ea;
+    --muted: #8a8a96; --accent: #b48cff; --active: #6cd49a; --done: #6a6a76;
+    --backlog: #d4a76c;
+  }
+  * { box-sizing: border-box; }
+  body { margin: 0; font: 14px/1.5 -apple-system, system-ui, sans-serif;
+         background: var(--bg); color: var(--text); }
+  header { padding: 16px 24px; border-bottom: 1px solid var(--border);
+           display: flex; align-items: center; gap: 16px; }
+  header h1 { margin: 0; font-size: 18px; font-weight: 600; }
+  header .count { color: var(--muted); font-size: 13px; }
+  .controls { padding: 12px 24px; border-bottom: 1px solid var(--border);
+              display: flex; gap: 12px; align-items: center; flex-wrap: wrap; }
+  .controls input, .controls select {
+    background: var(--panel); color: var(--text); border: 1px solid var(--border);
+    border-radius: 4px; padding: 6px 10px; font: inherit;
+  }
+  .controls input { min-width: 240px; }
+  .tabs { display: flex; gap: 4px; }
+  .tab { background: transparent; color: var(--muted); border: 1px solid var(--border);
+         border-radius: 4px; padding: 6px 12px; cursor: pointer; font: inherit; }
+  .tab.on { background: var(--panel); color: var(--text); border-color: var(--accent); }
+  main { padding: 16px 24px; max-width: 1100px; }
+  .task { background: var(--panel); border: 1px solid var(--border);
+          border-radius: 6px; margin-bottom: 8px; overflow: hidden; }
+  .task-head { padding: 10px 14px; cursor: pointer; display: flex;
+               align-items: center; gap: 10px; }
+  .task-head:hover { background: #2a2a32; }
+  .id { color: var(--muted); font-family: ui-monospace, monospace; font-size: 12px;
+        min-width: 38px; }
+  .title { flex: 1; font-weight: 500; }
+  .pill { font-size: 11px; padding: 2px 8px; border-radius: 10px;
+          border: 1px solid var(--border); color: var(--muted); }
+  .pill.status-active { color: var(--active); border-color: var(--active); }
+  .pill.status-backlog { color: var(--backlog); border-color: var(--backlog); }
+  .pill.status-done { color: var(--done); }
+  .dates { color: var(--muted); font-size: 12px; min-width: 90px; text-align: right; }
+  .body { padding: 0 14px 14px 60px; border-top: 1px solid var(--border);
+          display: none; color: #cfcfd6; }
+  .body.on { display: block; }
+  .body h1, .body h2, .body h3 { color: var(--text); margin: 14px 0 6px; }
+  .body h1 { font-size: 16px; } .body h2 { font-size: 14px; }
+  .body h3 { font-size: 13px; color: var(--accent); }
+  .body code { background: #2c2c34; padding: 1px 5px; border-radius: 3px;
+               font-family: ui-monospace, monospace; font-size: 12px; }
+  .body pre { background: #15151a; padding: 10px; border-radius: 4px; overflow-x: auto; }
+  .body pre code { background: none; padding: 0; }
+  .body ul, .body ol { padding-left: 22px; }
+  .body a { color: var(--accent); }
+  .empty { color: var(--muted); padding: 32px; text-align: center; }
+</style>
+</head>
+<body>
+<header>
+  <h1>Travel Companion — Task Tracker</h1>
+  <span class="count" id="count"></span>
+</header>
+<div class="controls">
+  <input id="q" type="text" placeholder="search title or body…" autofocus>
+  <select id="area"><option value="">all areas</option></select>
+  <div class="tabs">
+    <button class="tab on" data-status="active">Active</button>
+    <button class="tab" data-status="backlog">Backlog</button>
+    <button class="tab" data-status="done">Done</button>
+    <button class="tab" data-status="all">All</button>
+  </div>
+</div>
+<main id="list"></main>
+<script>
+const TASKS = [{"id": "\"000\"", "title": "Bootstrap local task tracker", "status": "done", "area": "meta", "priority": "normal", "started": "2026-05-13", "finished": "2026-05-13", "file": "000-bootstrap-tracker.md", "body": "## Description\n\nSet up a local, file-backed task tracker that AI tools (Claude Code) can manage and a human can review. Goal: lightweight Jira-alternative — markdown source of truth, HTML viewer, no server, no cloud. Mirrors the system already in use in the `echoofabyss` project.\n\n## Work log\n\n- 2026-05-13: ported `build_tasks_html.py`, `/task-start`, `/task-done`, and the PostToolUse hook from the echoofabyss project.\n\n## Summary\n\nTracker is live. Schema: `id`, `title`, `status` (active/backlog/done), `area`, `priority`, `started`, `finished` in frontmatter; body has `## Description`, `## Work log`, `## Summary`. Use `/task-start <title>` to open, `/task-done <id>` to close. Open `tasks/tasks.html` in a browser to review — it refreshes automatically whenever any task markdown file is edited."}, {"id": "\"001\"", "title": "Bring-your-own Anthropic API key", "status": "backlog", "area": "settings", "priority": "normal", "started": "", "finished": "", "file": "001-bring-your-own-anthropic-api-key.md", "body": "## Description\n\nLet end users supply their own Anthropic API key instead of using the shared key baked into the build. Store the key locally in iOS Keychain / Android Keystore via `expo-secure-store`, expose a Settings UI to paste/clear it, and switch `claudeApi.js` to read from the secure store rather than `@env`. Once shipped, the EAS secret + `eas-build-pre-install` hook can be removed.\n\n## Work log\n\n- 2026-05-13: filed to backlog. Decided to keep the baked-in key for TestFlight dogfooding and revisit before public release.\n\n## Summary\n\n_(filled in at /task-done)_"}];
+const STATE = { status: "active", area: "", q: "" };
+
+// Tiny markdown renderer — handles headers, bold, italic, code, lists, links, paragraphs.
+function md(src) {
+  src = src.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
+  // fenced code
+  src = src.replace(/```([\s\S]*?)```/g, (_, c) => "<pre><code>" + c.replace(/^\n/, "") + "</code></pre>");
+  const lines = src.split("\n");
+  const out = [];
+  let inList = null; // "ul" | "ol" | null
+  let para = [];
+  const flushPara = () => { if (para.length) { out.push("<p>" + para.join(" ") + "</p>"); para = []; } };
+  const closeList = () => { if (inList) { out.push("</" + inList + ">"); inList = null; } };
+  for (const raw of lines) {
+    const line = raw.replace(/\s+$/, "");
+    if (!line.trim()) { flushPara(); closeList(); continue; }
+    let m;
+    if ((m = line.match(/^(#{1,3})\s+(.*)$/))) {
+      flushPara(); closeList();
+      out.push("<h" + m[1].length + ">" + inline(m[2]) + "</h" + m[1].length + ">");
+    } else if ((m = line.match(/^[-*]\s+(.*)$/))) {
+      flushPara();
+      if (inList !== "ul") { closeList(); out.push("<ul>"); inList = "ul"; }
+      out.push("<li>" + inline(m[1]) + "</li>");
+    } else if ((m = line.match(/^\d+\.\s+(.*)$/))) {
+      flushPara();
+      if (inList !== "ol") { closeList(); out.push("<ol>"); inList = "ol"; }
+      out.push("<li>" + inline(m[1]) + "</li>");
+    } else if (line.startsWith("<pre>")) {
+      flushPara(); closeList(); out.push(line);
+    } else {
+      closeList();
+      para.push(inline(line));
+    }
+  }
+  flushPara(); closeList();
+  return out.join("\n");
+}
+function inline(s) {
+  return s
+    .replace(/`([^`]+)`/g, "<code>$1</code>")
+    .replace(/\*\*([^*]+)\*\*/g, "<strong>$1</strong>")
+    .replace(/(^|[^*])\*([^*]+)\*/g, "$1<em>$2</em>")
+    .replace(/\[([^\]]+)\]\(([^)]+)\)/g, '<a href="$2" target="_blank" rel="noopener">$1</a>');
+}
+
+function populateAreas() {
+  const sel = document.getElementById("area");
+  const areas = [...new Set(TASKS.map(t => t.area).filter(Boolean))].sort();
+  for (const a of areas) {
+    const o = document.createElement("option"); o.value = a; o.textContent = a;
+    sel.appendChild(o);
+  }
+}
+
+function render() {
+  const list = document.getElementById("list");
+  const q = STATE.q.toLowerCase();
+  let items = TASKS.filter(t => {
+    if (STATE.status !== "all" && t.status !== STATE.status) return false;
+    if (STATE.area && t.area !== STATE.area) return false;
+    if (q && !(t.title.toLowerCase().includes(q) || t.body.toLowerCase().includes(q))) return false;
+    return true;
+  });
+  // sort: done by finished desc; else started desc; fallback id desc
+  items.sort((a, b) => {
+    const ka = a.status === "done" ? a.finished : a.started;
+    const kb = b.status === "done" ? b.finished : b.started;
+    return (kb || "").localeCompare(ka || "") || (b.id || "").localeCompare(a.id || "");
+  });
+  document.getElementById("count").textContent = items.length + " task" + (items.length === 1 ? "" : "s");
+  if (!items.length) { list.innerHTML = '<div class="empty">No tasks match.</div>'; return; }
+  list.innerHTML = items.map(t => {
+    const dates = t.status === "done" && t.finished
+      ? t.finished
+      : (t.started || "");
+    return `
+      <div class="task" data-id="${t.id}">
+        <div class="task-head">
+          <span class="id">${t.id}</span>
+          <span class="title">${escapeHtml(t.title)}</span>
+          ${t.area ? `<span class="pill">${escapeHtml(t.area)}</span>` : ""}
+          <span class="pill status-${t.status}">${t.status}</span>
+          <span class="dates">${dates}</span>
+        </div>
+        <div class="body">${md(t.body || "_(no body)_")}</div>
+      </div>`;
+  }).join("");
+  for (const head of list.querySelectorAll(".task-head")) {
+    head.addEventListener("click", () => head.nextElementSibling.classList.toggle("on"));
+  }
+}
+function escapeHtml(s) { return s.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;"); }
+
+document.getElementById("q").addEventListener("input", e => { STATE.q = e.target.value; render(); });
+document.getElementById("area").addEventListener("change", e => { STATE.area = e.target.value; render(); });
+for (const tab of document.querySelectorAll(".tab")) {
+  tab.addEventListener("click", () => {
+    document.querySelectorAll(".tab").forEach(t => t.classList.remove("on"));
+    tab.classList.add("on");
+    STATE.status = tab.dataset.status;
+    render();
+  });
+}
+populateAreas();
+render();
+</script>
+</body>
+</html>

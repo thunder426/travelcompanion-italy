@@ -27,3 +27,6 @@ npm-debug.log*
 # Editor
 .vscode/settings.json
 .idea/
+
+# Claude Code per-user permissions
+.claude/settings.local.json
